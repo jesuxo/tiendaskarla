@@ -22,6 +22,7 @@
         .drag-producto:active {
             cursor: grabbing;
         }
+        
         .drag-producto.asignado {
             opacity: 0.5;
             background-color: #e9ecef;
@@ -29,6 +30,7 @@
             border-color: #28a745;
             position: relative;
         }
+
         .drag-producto.asignado:after {
             content: "";
             position: absolute;
