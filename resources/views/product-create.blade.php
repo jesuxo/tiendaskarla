@@ -1,0 +1,269 @@
+@extends('layouts.master')
+@section('title')
+    Crear nuevo producto
+@endsection
+@section('css')
+    <!-- extra css -->
+    <script>
+        function  verUltimoProd(codinst){
+            $('#invalidcodprod').html('C&oacute;digo ');
+            $('#codprod').val('');
+            $('.datosprod').fadeOut();
+
+            $.ajax({
+                type: 'POST',
+                url: '/sainsta/check/lastprod/'+codinst,
+                headers: {
+                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                },
+                data:{ },
+                success: function (data) {
+                    lastprod = data.last;
+                    if(lastprod) {
+                        $('#codprod').val(lastprod);
+                        $('.datosprod').fadeIn();
+                    }
+
+                }
+            });
+
+        }
+
+    </script>
+@endsection
+@section('content')
+    <x-breadcrumb title="Crear nuevo producto" pagetitle="Productos" />
+    <form id="createproduct-form" autocomplete="off" class="needs-validation" method="post" novalidate action="{{route('productos.store')}}">
+        @method('POST')
+        @csrf
+        <div class="row">
+            <div class="col-xl-9 col-lg-8">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="d-flex">
+                            <div class="flex-shrink-0 me-3">
+                                <div class="avatar-sm">
+                                    <div class="avatar-title rounded-circle bg-light text-primary fs-20">
+                                        <i class="bi bi-box-seam"></i>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="flex-grow-1">
+                                <h5 class="card-title mb-1 ">Informaci&oacute;n</h5>
+                                <p class="text-muted mb-0">Ingrese los datos del producto.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body" onclick="$('.datosprod').fadeOut();">
+                        <div>
+                            <div class="d-flex align-items-start">
+                                <div class="flex-grow-1">
+                                    <label class="form-label">Instancia de inventario</label>
+                                </div>
+                                <div class="flex-shrink-0">
+                                    <a href="/instancias" class="float-end text-decoration-underline">+1 Instancia</a>
+                                </div>
+                            </div>
+                            <div>
+                                <select onchange="$('.error-msg').hide(); verUltimoProd(this.value)"
+                                        onclick="$('.datosprod').fadeOut();"
+                                        class="form-select" data-choices  required
+                                        id="choices-category-input" name="codinst">
+                                    <option value=""> Seleccionar </option>
+                                    @foreach($instancias as $instancia)
+                                        <option style="margin-left: {{($instancia->nivel-1) * 14}}px !important;" value="{{$instancia->codinst}}">{!! $instancia->label !!}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div class="error-msg mt-1">Por favor, seleccione una instancia del inventario para clasificar este producto.</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card datosprod" style="display: none">
+
+                    <div class="card-body" style=" background-color: #f3f4f4">
+                        <div class="row ">
+                            <div class="col-lg-6">
+                                <div class="mb-3">
+                                    <label class="form-label" id="invalidcodprod" for="codprod">C&oacute;digo</label>
+                                    <input type="text" class="form-control" id="codprod" maxlength="15" name="codprod"
+                                           placeholder="" required value=""
+                                           onclick="$('#invalidcodprod').html('C&oacute;digo');
+                                                    $('#invalidcodprod').removeClass('text-danger');"
+                                    >
+                                </div>
+                            </div>
+                            <div class="col-lg-6">
+                                <div class="mb-3">
+                                    <label class="form-label" for="refere">Referencia</label>
+                                    <input type="text" class="form-control" id="refere" name="refere"
+                                           placeholder="Ej: C&oacute;digo Barra">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label" for="descrip">Nombre del producto</label>
+                            <input type="hidden" class="form-control" id="formAction" name="formAction" value="add">
+                            <input type="text" class="form-control d-none" id="product-id-input">
+                            <input type="text" class="form-control" id="descrip" value=""
+                                   placeholder="Descripcion principal" name="descrip" required>
+                            <div class="invalid-feedback">Por favor, ingrese el nombre/descripci&oacute;n del producto</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <input type="text" class="form-control" id="descrip2" name="descrip2" value=""
+                                   placeholder="Descripci&oacute;n 2" >
+                        </div>
+
+                        <div class="mb-3">
+                            <input type="text" class="form-control" id="descrip3" name="descrip3" value=""
+                                   placeholder="Descripci&oacute;n 3" >
+                        </div>
+                        <div class="row ">
+                            <div class="col-lg-6">
+                                <div class="mb-3">
+                                    <label class="form-label" for="marca">Marca</label>
+                                    <input type="text" class="form-control" id="marca"  name="marca"
+                                           placeholder="Ej: POLAR">
+                                </div>
+                            </div>
+
+                            <div class="col-lg-6">
+                                <div class="mb-3">
+                                    <label class="form-label" for="unidad">Unidad de medida</label>
+                                    <input type="text" class="form-control" id="unidad" name="unidad"
+                                           placeholder="Ej: UND">
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+                <div class="card" style="display: none">
+
+                    <div class="card-header">
+                        <div class="d-flex">
+                            <div class="flex-shrink-0 me-3">
+                                <div class="avatar-sm">
+                                    <div class="avatar-title rounded-circle bg-light text-primary fs-20">
+                                        <i class="bi bi-images"></i>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="flex-grow-1">
+                                <h5 class="card-title mb-1">Product Gallery</h5>
+                                <p class="text-muted mb-0">Add product gallery images.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card-body">
+                        <div class="dropzone my-dropzone">
+                            <div class="dz-message">
+                                <div class="mb-3">
+                                    <i class="display-4 text-muted ri-upload-cloud-2-fill"></i>
+                                </div>
+
+                                <h5>Drop files here or click to upload.</h5>
+                            </div>
+                        </div>
+                        <div class="error-msg mt-1">Please add a product images.</div>
+                    </div>
+                </div>
+
+                <div class="text-end mb-3">
+                    <button type="submit" class="btn btn-success w-sm">Enviar</button>
+                </div>
+            </div>
+
+            <div class="col-xl-3 col-lg-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">Condici&oacute;n</h5>
+                    </div>
+                    <div class="card-body">
+                        <div>
+
+                            <select class="form-select" id="choices-publish-visibility-input" data-choices
+                                data-choices-search-false>
+                                <option value="1" selected>Activo</option>
+                                <option value="0">Inactivo</option>
+                            </select>
+                        </div>
+                    </div>
+
+                </div>
+
+
+                <div class="card"  >
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">Colores</h5>
+                    </div>
+
+                    <div class="card-body">
+                        <div>
+                                <table id="items-table" class="tdline">
+                                    <thead>
+                                    <tr>
+                                        <td height="31" align="center" class="tdline titulo">Color</td>
+                                        <td align="center" class="actions tdline titulo">Acciones</td>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    <!-- Fila inicial -->
+                                    <tr data-index="0">
+                                        <td>
+                                            <input name="itemscolores[0][color]" class="form-control" required type="text" />
+                                        </td>
+                                        <td class="actions">
+
+                                        </td>
+                                    </tr>
+                                    </tbody>
+                                </table>
+
+                                <div class="">
+                                    <button type="button" id="addItem" class="btn btn-success w-sm" style="border-radius:5px; margin-bottom:10px;">Agregar +1 </button>
+                                </div>
+                            <script>
+
+                                let itemCount = 1; // Empezamos en 1 porque ya tenemos la primera fila
+
+                                function removeRow(index) {
+                                    $(`tr[data-index="${index}"]`).remove();
+                                }
+
+                                $('#addItem').click(function() {
+                                    const newIndex = itemCount;
+                                    itemCount++;
+
+                                    const newRow = `
+                <tr data-index="${newIndex}">
+                    <td>
+                        <input name="itemscolores[${newIndex}][color]"   class="form-control" required type="text" />
+                    </td>
+                    <td class="actions">
+                        <button type="button" class="btn btn-danger btn-sm" onclick="removeRow(${newIndex})">Eliminar</button>
+                    </td>
+                </tr>
+            `;
+
+                                    $('#items-table tbody').append(newRow);
+                                });
+                            </script>
+                        </div>
+                    </div>
+                </div>
+
+
+            </div>
+        </div>
+    </form>
+@endsection
+@section('scripts')
+    <script src="{{ URL::asset('build/js/backend/create-product.init.js') }}?version={{rand(0,500)}}"></script>
+    <!-- App js -->
+    <script src="{{ URL::asset('build/js/app.js') }}"></script>
+@endsection
