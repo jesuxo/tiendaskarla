@@ -822,12 +822,62 @@ class SaprodController extends Controller
         $comercial  = $sucursal->fk_comercial;
 
         $productos = Saprod::where('comercial',$comercial)
-            ->whereRaw("codprod not in (select codprod from saprodsucursal where fk_sucursal=$sucursalid )")->get()->take(50);
+            ->whereRaw("codprod not in (select codprod from saprodsucursal where fk_sucursal=$sucursalid )")
+            ->get()
+            ->take(150);
+
+        // Obtener los códigos de productos para consultar sus precios especiales
+        $codprods = $productos->pluck('codprod')->toArray();
+
+        // Consultar precios especiales (grupos de descuento) para estos productos
+        $preciosEspeciales = [];
+        if (!empty($codprods)) {
+            $preciosEspeciales = DB::table('producto_grupo_descuento')
+                ->whereIn('codprod', $codprods)
+                ->get(['codprod', 'precio_final', 'grupo_id', 'tasa_cambio_usd'])
+                ->groupBy('codprod')
+                ->map(function($items) {
+                    // Si hay múltiples grupos, tomar el precio más bajo o el más reciente
+                    $mejorPrecio = $items->sortBy('precio_final')->first();
+                    return [
+                        'precio_especial' => $mejorPrecio->precio_final,
+                        'grupo_id'        => $mejorPrecio->grupo_id,
+                        'tasa_cambio'     => $mejorPrecio->tasa_cambio_usd
+                    ];
+                })
+                ->toArray();
+        }
+
+        // Enriquecer los productos con su precio especial si existe
+        $productosConPrecio = $productos->map(function($producto) use ($preciosEspeciales) {
+            $productoArray = $producto->toArray();
+
+            if (isset($preciosEspeciales[$producto->codprod])) {
+                $productoArray['tiene_precio_especial'] = true;
+                $productoArray['precio_especial']    = $preciosEspeciales[$producto->codprod]['precio_especial'];
+                $productoArray['grupo_descuento_id'] = $preciosEspeciales[$producto->codprod]['grupo_id'];
+                $productoArray['tasa_cambio_usd']    = $preciosEspeciales[$producto->codprod]['tasa_cambio'];
+
+                // Opcional: Sobrescribir costod3 con el precio especial
+                // $productoArray['costod3'] = $preciosEspeciales[$producto->codprod]['precio_especial'];
+            } else {
+                $productoArray['tiene_precio_especial'] = false;
+                $productoArray['precio_especial']       = null;
+            }
+
+            return $productoArray;
+        });
 
         $servicios = Saserv::where('comercial',$comercial)
-            ->whereRaw("codserv not in (select codserv from saservsucursal where fk_sucursal=$sucursalid )")->limit(50)->get();
+            ->whereRaw("codserv not in (select codserv from saservsucursal where fk_sucursal=$sucursalid )")
+            ->limit(50)
+            ->get();
 
-        return response()->json(['success'=>'success', 'newproductos' => $productos]);
+        return response()->json([
+            'success' => 'success',
+            'newproductos' => $productosConPrecio,
+            'newservicios' => $servicios
+        ]);
     }
 
     public function productosinstsancias(Request $request)

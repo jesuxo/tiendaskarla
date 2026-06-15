@@ -22,7 +22,7 @@
         .drag-producto:active {
             cursor: grabbing;
         }
-        
+
         .drag-producto.asignado {
             opacity: 0.5;
             background-color: #e9ecef;

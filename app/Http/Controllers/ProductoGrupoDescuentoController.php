@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Saprod;
 use App\Models\Sainsta;
 use App\Models\GrupoDescuento;
+use App\Models\Saprodsucursal;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -240,6 +241,13 @@ class ProductoGrupoDescuentoController extends Controller
 
     public function asignar(Request $request)
     {
+
+        $comercialId  = session('comercialid') ;
+        if(!$comercialId) {
+            session(['comercialid' => 1]);
+            $comercialId = 1;
+        }
+
         $request->validate([
             'codprod' => 'required|exists:saprod,codprod',
             'grupo_id' => 'required|exists:grupos_descuento,id',
@@ -269,6 +277,12 @@ class ProductoGrupoDescuentoController extends Controller
                     'codprod' => $request->codprod,
                     'grupo_id' => $request->grupo_id,
                 ], $data));
+
+                Saprodsucursal::whereIn('codprod', $request->codprod)
+                    ->whereHas('producto', function ($query) use ($comercialId) {
+                        $query->where('comercial', $comercialId);
+                    })
+                    ->delete();
             } else {
                 DB::table('producto_grupo_descuento')
                     ->where('codprod', $request->codprod)
