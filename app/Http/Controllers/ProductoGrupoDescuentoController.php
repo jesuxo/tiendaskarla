@@ -278,7 +278,7 @@ class ProductoGrupoDescuentoController extends Controller
                     'grupo_id' => $request->grupo_id,
                 ], $data));
 
-                Saprodsucursal::where('codprod', $request->codprod)
+                Saprodsucursal::whereIn('codprod', $request->codprod)
                     ->whereHas('producto', function ($query) use ($comercialId) {
                         $query->where('comercial', $comercialId);
                     })
