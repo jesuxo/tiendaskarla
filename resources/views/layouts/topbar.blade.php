@@ -510,7 +510,7 @@
 
 <!-- Modal -->
 <div class="modal fade" id="searchModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
+    <div class="modal-dialog modal-xl">
         <div class="modal-content rounded">
             <div class="modal-header p-3">
                 <div class="position-relative w-100">

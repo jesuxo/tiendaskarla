@@ -63,19 +63,143 @@ class SaprodController extends Controller
 
     public function index()
     {
-        $comercial  = session('comercialid') ;
-        if(!$comercial) {
+        $comercialid = session('comercialid');
+        if(!$comercialid) {
             session(['comercialid' => 1]);
-            $comercial = 1;
+            $comercialid = 1;
         }
 
-        $instancias = Sainsta::selectRaw("  Descrip as label, descrip, id, nivel, codinst , codalte")
-                               ->with(['padre','hijos',  'productos'])
-                               ->where('comercial',$comercial)
-                               ->orderBy('codalte','asc')
-                               ->get();
+        $sucursales = Sasucursal::where("fk_comercial", $comercialid)->get();
 
-        return view('product-list', compact('instancias') );
+        $fechasaux      = '';
+        $operacionesrep = '';
+
+        $fechasreport   = (isset($request->fechasreport))? $request->fechasreport : '';
+        $codprod        = (isset($request->codprod))? $request->codprod : '';
+        $fechashoy      =  Carbon::now()->format('d/m/Y');
+        $nofilterdate = 0;
+
+        if(!$fechasreport) {
+            $nofilterdate = 1;
+            $fechasreport = $fechashoy;
+        }
+
+        $fechasaux = str_replace(' ','',$fechasreport);
+        $fec1 = $fec2 = '';
+
+        if(strpos($fechasaux,"to"))
+            list($fec1, $fec2) = explode("to",$fechasaux);
+        else {
+            if(!$nofilterdate) {
+                list($d1, $m1, $y1) = explode("/", $fechasreport);
+                $fec1 = "$d1/$m1/$y1";
+                $fec2 = $fec1;
+                $fechasreport = "$fec1 to $fec2";
+            }else{
+                list($d1, $m1, $y1) = explode("/", $fechasreport);
+                $fec1 = "$d1/$m1/$y1";
+                $fec2 = "$d1/$m1/$y1";
+                $fechasreport = "$fec1 to $fec2";
+            }
+        }
+
+        list($d1,$m1,$y1) = explode("/",$fec1);
+        list($d2,$m2,$y2) = explode("/",$fec2);
+
+        $fec1 = "$y1-$m1-$d1";
+        $fec2 = "$y2-$m2-$d2";
+
+        $instancias = Sainsta::selectRaw("  Descrip as label, descrip, id, nivel, codinst , codalte")
+            ->with(['padre','hijos',  'productos'])
+            ->where('comercial',$comercialid)
+            ->orderBy('codalte','asc')
+            ->get();
+
+        // OBTENER ÚLTIMOS PRODUCTOS CREADOS
+        $ultimosProductos = Saprod::where('comercial', $comercialid)
+            ->orderBy('created_at', 'desc')
+            ->limit(10)
+            ->get();
+
+        // Calcular total de productos activos
+        $totalProductos = Saprod::where('comercial', $comercialid)
+            ->where('activo', 1)
+            ->count();
+
+
+        if(isset($codprod) and $codprod !=''){
+
+            $compras = DB::table('saitemcom')
+                ->select([
+                    'id',
+                    'tipocom as tipo',
+                    'numerod',
+                    'FechaE',
+                    DB::raw("date_format(fechae,'%d/%m/%Y') as fecha"),
+                    DB::raw('(cantidad*signo) as cantidad'),
+                    'fk_sucursal',
+                    'preciod as costo',
+                    'costod as precio',
+                    'codubic as dep1',
+                    DB::raw("'' as dep2"),
+                    'descrip1 as descripcion',
+                    DB::raw("'COMPRA' as tipo_movimiento")
+                ])
+                ->where('coditem', $codprod)
+                ->whereBetween('fechae', ["$fec1 00:00:00", "$fec2  23:55:00"]);
+
+            $ventas = DB::table('saitemfac')
+                ->select([
+                    'id',
+                    'TipoFac as tipo',
+                    'numerod',
+                    'FechaE',
+                    DB::raw("date_format(fechae,'%d/%m/%Y') as fecha"),
+                    DB::raw('(cantidad*signo) as cantidad'),
+                    'fk_sucursal',
+                    'preciod as costo',
+                    'costod as precio',
+                    'codubic as dep1',
+                    DB::raw("'' as dep2"),
+                    'Descrip1 as descripcion',
+                    DB::raw("'VENTA' as tipo_movimiento")
+                ])
+                ->where('CodItem', $codprod)
+                ->whereBetween('FechaE', ["$fec1 00:00:00", "$fec2  23:55:00"]);
+
+            $operaciones = DB::table('saitemopi')
+                ->select([
+                    'id',
+                    'tipoopi as tipo',
+                    'numerod',
+                    'FechaE',
+                    DB::raw("date_format(fechae,'%d/%m/%Y') as fecha"),
+                    DB::raw('(cantidad*signo) as cantidad'),
+                    'fk_sucursal',
+                    'preciod as costo',
+                    DB::raw('0 as precio'),
+                    'codubic as dep1',
+                    'codubic2 as dep2',
+                    'Descrip1 as descripcion',
+                    DB::raw("'OPERACION_INTERNA' as tipo_movimiento")
+                ])
+                ->where('CodItem', $codprod)
+                ->whereBetween('FechaE', ["$fec1 00:00:00", "$fec2  23:55:00"]);
+
+            $operacionesrep = $compras->union($ventas)->union($operaciones)
+                ->orderBy('FechaE', 'asc')
+                ->get();
+        }
+
+        return view('product-list', compact(
+            'instancias',
+            'sucursales',
+            'codprod',
+            'operacionesrep',
+            'fechasreport',
+            'ultimosProductos',
+            'totalProductos',
+        ));
     }
 
     public function existencias(Request $request)
