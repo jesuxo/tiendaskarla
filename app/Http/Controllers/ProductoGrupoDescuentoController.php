@@ -343,6 +343,23 @@ class ProductoGrupoDescuentoController extends Controller
         return response()->json(['asignados' => $resultado]);
     }
 
+    public function getAsignacionesProducto($codprod)
+    {
+        $asignaciones = DB::table('producto_grupo_descuento')
+            ->where('codprod', $codprod)
+            ->join('grupos_descuento', 'producto_grupo_descuento.grupo_id', '=', 'grupos_descuento.id')
+            ->select(
+                'producto_grupo_descuento.*',
+                'grupos_descuento.nombre as grupo_nombre',
+                'grupos_descuento.porcentaje_descuento'
+            )
+            ->get();
+
+        return response()->json([
+            'asignaciones' => $asignaciones
+        ]);
+    }
+
     public function quitar(Request $request)
     {
         $request->validate([

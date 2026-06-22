@@ -187,6 +187,7 @@ Route::middleware(['check.admin'])->group(function () {
         Route::get('compra/seriales/{id}', 'documentoSerialesSacomp');
     });
 
+    // En el grupo de rutas con middleware 'check.admin' o dentro del grupo autenticado
     Route::prefix('productos-grupos')->group(function () {
         Route::get('/', [ProductoGrupoDescuentoController::class, 'index'])->name('productos-grupos.index');
         Route::get('/productos', [ProductoGrupoDescuentoController::class, 'getProductos'])->name('productos-grupos.productos');
@@ -201,6 +202,8 @@ Route::middleware(['check.admin'])->group(function () {
         Route::get('/verificar-asignacion', [ProductoGrupoDescuentoController::class, 'verificarAsignacion'])->name('productos-grupos.verificar-asignacion');
         Route::post('/verificar-multiples', [ProductoGrupoDescuentoController::class, 'verificarMultiplesAsignaciones'])->name('productos-grupos.verificar-multiples');
         Route::post('/obtener-precios-asignados', [ProductoGrupoDescuentoController::class, 'obtenerPreciosAsignados'])->name('productos-grupos.obtener-precios-asignados');
+        Route::get('/asignaciones-producto/{codprod}', [ProductoGrupoDescuentoController::class, 'getAsignacionesProducto'])
+            ->name('productos-grupos.asignaciones-producto');
     });
 
 
