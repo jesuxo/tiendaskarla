@@ -729,7 +729,7 @@ class SaprodController extends Controller
         $busqueda = str_replace("*", " ", $busqueda);
         $vector = explode(" ", $busqueda);
 
-        if ($vector ) {
+        if ($vector) {
             $numerito = 0;
             $cadena   = '';
             foreach ($vector as $value) {
@@ -741,10 +741,36 @@ class SaprodController extends Controller
             }
         }
 
-        $comercial = session('comercialid') ;
-        $productos = Saprod::where('comercial',$comercial)->whereRaw($cadena)->orderBy('updated_at','desc')->get();
+        $comercial = session('comercialid');
 
-        return view('layouts.ajaxbusqueda',compact('productos'))->render();
+        // Obtener los productos
+        $productos = Saprod::where('comercial', $comercial)
+            ->whereRaw($cadena)
+            ->orderBy('updated_at', 'desc')
+            ->limit(60)
+            ->get();
+
+        // Obtener las sucursales del comercial
+        $sucursales = Sasucursal::where('fk_comercial', $comercial)
+            ->orderBy('descrip')
+            ->get();
+
+        // Para cada producto, obtener las existencias por sucursal
+        foreach ($productos as $producto) {
+            if(!isset($producto->existencias_por_sucursal))
+                $producto->existencias_por_sucursal = [];
+
+            $existencias = Saexis::where('codprod', $producto->codprod)
+                ->whereIn('fk_sucursal', $sucursales->pluck('id'))
+                ->where('existen','<>',0)
+                ->with('deposito')
+                ->get();
+
+            $producto->existencias_por_sucursal = $existencias;
+        }
+
+
+        return view('layouts.ajaxbusqueda', compact('productos', 'sucursales'))->render();
     }
 
     public function saprodsucursal(Request $request)

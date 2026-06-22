@@ -16,4 +16,9 @@ class Saexis extends Model
         return $this->belongsTo(Sasucursal::class, 'fk_sucursal', 'id')->where('fk_comercial',$comercial);
     }
 
+    public function deposito  (){
+        $comercial = session('comercialid') ;
+        return $this->belongsTo(Sadepo::class, 'codubic', 'codubic')->where('comercial',$comercial);
+    }
+
 }
