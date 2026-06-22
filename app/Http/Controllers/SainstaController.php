@@ -44,6 +44,7 @@ class SainstaController extends Controller
     public function lastprod($codinst)
     {
         $last       = 0;
+        $incrementa = 1;
         $comercial  = session('comercialid') ;
         $instancia  = Sainsta::where('codinst', $codinst)->first();
         $product    = Saprod::where(['comercial'=> $comercial, 'codinst' => $codinst])->orderBy('id', 'desc')->first();
@@ -55,12 +56,25 @@ class SainstaController extends Controller
             $last = substr($last, 3, 4);
         }
 
-        $last = $last + 1;
+        $flag = 1;
+        while($flag == 1){
+            $last = $last + 1;
 
-        $sqlcheck = "select lpad('$last', 4, '0') as cadena ";
-        $resquery = DB::select($sqlcheck);
-        $numprx   = $resquery[0]->cadena;
-        $numprx   = "$codinsta$numprx";
+            $sqlcheck = "select lpad('$last', 4, '0') as cadena ";
+            $resquery = DB::select($sqlcheck);
+            $numprx   = $resquery[0]->cadena;
+            $numprx   = "$codinsta$numprx";
+
+            $prodchec = Saprod::where(['comercial'=> $comercial, 'codprod' => $numprx])->first();
+            if(isset($prodchec) and isset($prodchec->codprod)){
+
+            }else{
+                $flag = 0;
+            }
+        }
+
+
+
 
         return response()->json(['last' => $numprx ]);
     }
