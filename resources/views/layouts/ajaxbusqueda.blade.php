@@ -45,7 +45,8 @@
                 <td class="align-middle">
                     <div class="d-flex justify-content-between align-items-center">
                         <a href="{{ route('productos.edit', $producto->id) }}" class="fw-medium link-primary">
-                            {{ $producto->descrip }}
+                            {{ $producto->descrip }} - Color:
+                            {{ $producto->color }}
                         </a>
                         <a href="{{ route('productos.edit', $producto->id) }}" class="ms-2">
                             <i class="bi-pencil-square text-primary"></i>
