@@ -162,6 +162,7 @@ Route::middleware(['check.admin'])->group(function () {
 
     Route::resource('productos', \App\Http\Controllers\SaprodController::class);
     Route::controller(\App\Http\Controllers\SaprodController::class)->group(function () {
+        Route::get('/saprod/marcas', [\App\Http\Controllers\SaprodController::class, 'getMarcas'])->name('saprod.marcas');
         Route::post('saprod/listprodubiccompany', 'listprodubiccompany')->name('saprod.listprodubiccompany');
         Route::get('saprod/json', 'json');
         Route::post('saprod/check/codprod/{codprod}', 'checkcodprod');
