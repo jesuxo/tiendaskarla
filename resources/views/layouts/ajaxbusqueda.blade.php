@@ -26,7 +26,7 @@
                         $existencia = $array->existen ?? 0;
                         $totalExistencias += $existencia;
 
-                        if($existencia > 0) {
+                        if($existencia > 0 and isset($array->deposito)) {
                             $color = 'primary'; //$existencia < 10 ? 'danger' : ($existencia < 30 ? 'warning' : 'success');
                             $existenciasHtml[] = "<span class='badge bg-{$color} bg-opacity-10 text-{$color}' title='{$array->deposito->descrip}'>" .
                                                 str_replace('SARA','',$array->deposito->descrip) . ": " . number_format($existencia, 0) .

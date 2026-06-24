@@ -204,6 +204,9 @@ class SaprodController extends Controller
 
     public function existencias(Request $request)
     {
+        $arraysucursales = auth()->user()->getSucursalesIdsComercialActual();
+        $arraysucursales = implode(",",$arraysucursales);
+
         $comercialid  = session('comercialid') ;
         if(!$comercialid) {
             session(['comercialid' => 1]);
@@ -211,25 +214,34 @@ class SaprodController extends Controller
         }
 
         $fksucursal    = (isset($request->fksucursal ))? $request->fksucursal : '';
-        $allsucursales = Sasucursal::where('fk_comercial', $comercialid)->orderBy('descrip','asc')->get();
+        $allsucursales = Sasucursal::where('fk_comercial', $comercialid)->orderBy('descrip','asc')
+            ->whereRaw("id in ($arraysucursales)")
+            ->get();
         $instancias    = Sainsta::selectRaw("Descrip as label, descrip, id, nivel, codinst , codalte, insPadre")
             ->where('comercial', $comercialid)
             ->orderBy('codalte','asc')
             ->get();
 
-        $sucursales = Sasucursal::where("fk_comercial", $comercialid)->orderBy('descrip');
+        $sucursales = Sasucursal::where("fk_comercial", $comercialid)
+            ->whereRaw("id in ($arraysucursales)")
+            ->orderBy('descrip');
+
         if($fksucursal)
             $sucursales = $sucursales->where('id',$fksucursal);
 
         $sucursales = $sucursales->get();
 
-        return view('existenciasInstancias', compact( 'fksucursal', 'allsucursales', 'sucursales', 'instancias', 'comercialid') );
+        return view('existenciasInstancias', compact( 'fksucursal', 'arraysucursales', 'allsucursales', 'sucursales', 'instancias', 'comercialid') );
     }
 
     public function existenciasphp(Request $request)
     {
-        $codinst    = $request->codinst;
-        $fksucursal = $request->fksucursal;
+        $arraysucursales = auth()->user()->getSucursalesIdsComercialActual();
+        $arraysucursales = implode(",",$arraysucursales);
+
+        $codinst     = $request->codinst;
+        $justcodinst = $request->justcodinst;
+        $fksucursal  = $request->fksucursal;
 
         $comercial  = session('comercialid') ;
         if(!$comercial) {
@@ -243,7 +255,8 @@ class SaprodController extends Controller
             ->get();
         $insPadre = 0;
 
-        $sucursales = Sasucursal::where("fk_comercial", $comercial);
+        $sucursales = Sasucursal::where("fk_comercial", $comercial)
+            ->whereRaw("id in ($arraysucursales)");
 
         if($fksucursal)
             $sucursales = $sucursales->where('id',$fksucursal);
@@ -258,7 +271,41 @@ class SaprodController extends Controller
                 break;
             }
         }
-        return view('existenciasInstanciasphp', compact('fksucursal', 'insPadre', 'codinst', 'sucursales', 'instancias', 'instanciaselected', 'comercial') )->render();
+        return view('existenciasInstanciasphp',
+            compact(
+                'fksucursal',
+                'insPadre',
+                'codinst',
+                'justcodinst',
+                'sucursales',
+                'instancias',
+                'instanciaselected',
+                'comercial')
+        )->render();
+    }
+
+    public function listprodubiccompany(Request $request)
+    {
+        $codprod    = $request->codprod;
+        $comercial  = session('comercialid') ;
+        if(!$comercial) {
+            session(['comercialid' => 1]);
+            $comercial = 1;
+        }
+
+        $allsucursa = Sasucursal::where('fk_comercial',$comercial)->get();
+        $auxsucu    = [];
+
+        foreach ($allsucursa as $sucu){
+            array_push( $auxsucu, $sucu->id);
+        }
+        $auxsucu = implode(',' , $auxsucu);
+
+        $existencias = Saexis::with('deposito')
+            ->whereRaw("fk_sucursal in ($auxsucu) and codprod='$codprod' and existen > 0")
+            ->orderBy('codubic')->get();
+
+        return response()->json(['success'=>'success', 'existencias' => $existencias]);
     }
 
     public function json()
