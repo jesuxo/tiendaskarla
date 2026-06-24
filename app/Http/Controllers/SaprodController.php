@@ -1143,7 +1143,7 @@ class SaprodController extends Controller
         $codalte     = $request->codalte;
         $len         = strlen($codalte);
 
-        $sqlcostoinv = "SELECT a.preciod, a.descrip, a.codprod, e.codubic, b.existen, e.descrip as deposito, a.color
+        $sqlcostoinv = "SELECT a.preciod, a.descrip, a.codprod, e.codubic, b.existen, e.descrip as deposito, a.color, a.marca
 								from saprod a , saexis b, sasucursal c, sainsta d, sadepo e
 								where a.codprod    = b.codprod
                                 and b.fk_sucursal  = c.id
@@ -1170,6 +1170,7 @@ class SaprodController extends Controller
                 $productos[$producto->codprod] = [];
 
             $productos[$producto->codprod]['descrip']    = $producto->descrip;
+            $productos[$producto->codprod]['marca']      = $producto->marca;
             $productos[$producto->codprod]['color']      = $producto->color;
             $productos[$producto->codprod]['preciod']    = $producto->preciod;
 

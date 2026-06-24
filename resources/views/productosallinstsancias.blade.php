@@ -24,13 +24,14 @@
                         <thead  style="position: sticky; top: 0;">
                         <tr>
                             <td width="4%" height="30" align="center" class="titulo tdlineff  "> COD</td>
-                            <td width="20%" align="center" class="titulo tdlineff  "> PRODUCTO  </td>
-                            <td width="9%"  align="center" class="titulo tdlineff  "> COSTO PRO</td>
+                            <td width="15%" align="center" class="titulo tdlineff  "> PRODUCTO  </td>
+                            <td width="5%" align="center"  class="titulo tdlineff  "> MARCA  </td>
+                            <td width="9%"  align="center" class="titulo tdlineff  "> COSTO  </td>
                             @foreach($deposito as $indexdep => $descripdepo)
                                 <td width="13%"  align="center" class="titulo tdlineff   "> {{ $descripdepo }}</td>
                             @endforeach
                             <td width="9%"  align="center" class="titulo tdlineff  "> Unds</td>
-                            <td width="9%"  align="center" class="titulo tdlineff  "> COSTO PRO* Unds</td>
+                            <td width="9%"  align="center" class="titulo tdlineff  "> COSTO  * Unds</td>
                         </tr>
                         </thead>
                         <tbody>
@@ -52,6 +53,7 @@
                             <tr  bgcolor="{{$bgcolor}}" style="color:#333;">
                                 <td align="center" class="titulo "> {{$index}}</td>
                                 <td align="left"   class="titulo  "> {{$producto['descrip'] }} {{$producto['color'] }}</td>
+                                <td align="center"   class="titulo  "> {{$producto['marca'] }} </td>
                                 <td align="right"   class="titulo  "> {{ number_format($producto['preciod'],2,',','.') }}</td>
                                 @foreach($deposito as $indexdep => $descripdepo)
                                 <td align="center" class="titulo ">
@@ -78,6 +80,7 @@
 
                         <tr   style="color:#333;">
                             <td align="center" class="titulo ">  </td>
+                            <td align="left"   class="titulo  ">  </td>
                             <td align="left"   class="titulo  ">  </td>
                             <td align="right"   class="titulo  ">  </td>
                             @foreach($deposito as $indexdep => $descripdepo)
