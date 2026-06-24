@@ -52,7 +52,7 @@
                             <tr  bgcolor="{{$bgcolor}}" style="color:#333;">
                                 <td align="center" class="titulo "> {{$index}}</td>
                                 <td align="left"   class="titulo  "> {{$producto['descrip'] }}</td>
-                                <td align="right"   class="titulo  "> {{ number_format($producto['preciodpro'],2,',','.') }}</td>
+                                <td align="right"   class="titulo  "> {{ number_format($producto['preciod'],2,',','.') }}</td>
                                 @foreach($deposito as $indexdep => $descripdepo)
                                 <td align="center" class="titulo ">
                                     @php
@@ -64,7 +64,7 @@
                                         $arraycantdep[$indexdep] = $arraycantdep[$indexdep] +$existencias[$index][$indexdep];
                                         $existdeps +=  $existencias[$index][$indexdep];
                                         $existdepstt +=  $existencias[$index][$indexdep];
-                                        $totalcost += $existencias[$index][$indexdep]*$producto['preciodpro'];
+                                        $totalcost += $existencias[$index][$indexdep]*$producto['preciod'];
                                     }
 
 
@@ -72,7 +72,7 @@
                                     {{(isset($existencias[$index][$indexdep]))? $existencias[$index][$indexdep] :'' }}</td>
                                 @endforeach
                                 <td align="center"   class="titulo  "> {{$existdeps+0 }}</td>
-                                <td align="right"   class="titulo  "> {{ number_format($existdeps*$producto['preciodpro'],2,',','.') }} </td>
+                                <td align="right"   class="titulo  "> {{ number_format($existdeps*$producto['preciod'],2,',','.') }} </td>
                             </tr>
                         @endforeach
 
