@@ -1141,7 +1141,28 @@ class SaprodController extends Controller
         }
 
         $codalte     = $request->codalte;
+        $busqueda    = $request->busqueda;
         $len         = strlen($codalte);
+
+        $busqueda = str_replace("\"", "", $busqueda);
+        $busqueda = str_replace("'",  "", $busqueda);
+        $busqueda = str_replace("*", " ", $busqueda);
+        $vector = explode(" ", $busqueda);
+
+        if ($vector ) {
+            $numerito = 0;
+            $cadena   = '';
+            foreach ($vector as $value) {
+                if ($numerito > 0) {
+                    $cadena  .= ' AND ';
+                }
+                $cadena  .= "(a.codprod like '%$value%' or a.descrip like '%$value%' or a.refere like '%$value%' or a.marca like '%$value%' or a.descrip2 like '%$value%')";
+                $numerito++;
+            }
+        }
+
+
+        if($cadena!='') $cadena = " and ($cadena) ";
 
         $sqlcostoinv = "SELECT a.preciod, a.descrip, a.codprod, e.codubic, b.existen, e.descrip as deposito, a.color, a.marca
 								from saprod a , saexis b, sasucursal c, sainsta d, sadepo e
@@ -1153,6 +1174,7 @@ class SaprodController extends Controller
 								and d.comercial    = $comercial
 								and e.comercial    = $comercial
 								and d.codinst      = a.codinst
+								$cadena
                                 and left(d.codalte,$len) = '$codalte'
 								and b.existen <> 0
                                 order by a.descrip
