@@ -51,7 +51,7 @@
 
                             <tr  bgcolor="{{$bgcolor}}" style="color:#333;">
                                 <td align="center" class="titulo "> {{$index}}</td>
-                                <td align="left"   class="titulo  "> {{$producto['descrip'] }}</td>
+                                <td align="left"   class="titulo  "> {{$producto['descrip'] }} {{$producto['color'] }}</td>
                                 <td align="right"   class="titulo  "> {{ number_format($producto['preciod'],2,',','.') }}</td>
                                 @foreach($deposito as $indexdep => $descripdepo)
                                 <td align="center" class="titulo ">
