@@ -253,8 +253,8 @@
                                 <a href="{{ route('productos.edit', $producto->id) }}" class="list-group-item list-group-item-action product-list-item">
                                     <div class="d-flex justify-content-between align-items-center">
                                         <div>
-                                            <strong class="text-primary">{{ $producto->codprod }}</strong>
-                                            <small class="d-block text-muted">{{ Str::limit($producto->descrip, 40) }}</small>
+                                            <strong class="text-primary">{{ $producto->descrip }} {{ $producto->color }}</strong>
+                                            <small class="d-block text-muted">{{ Str::limit($producto->codprod, 40) }}</small>
                                         </div>
                                         <small class="text-muted">
                                             {{ $producto->created_at ? $producto->created_at->format('d/m/Y') : 'N/A' }}
