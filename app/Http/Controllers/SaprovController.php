@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Cwcxcprv;
-use App\Models\Cwviajemoto;
+//use App\Models\Cwcxcprv;
+//use App\Models\Cwviajemoto;
 use App\Models\Sainsta;
 use App\Models\Saprov;
 use App\Models\Saprovsucursal;
@@ -933,7 +933,7 @@ class SaprovController extends Controller
 
             if ($proveedor) {
                 // Cargar pagos pendientes de este proveedor (viajes donde paga)
-                $pagosPendientes = Cwviajemoto::with(['viaje', 'cliente'])
+              /*  $pagosPendientes = Cwviajemoto::with(['viaje', 'cliente'])
                     ->where('proveedor_paga', true)
                     ->where('proveedor_codprov', $proveedor->codprov)
                     ->where('estado_conciliacion', 'pendiente')
@@ -963,7 +963,7 @@ class SaprovController extends Controller
                     ->orderBy('mes', 'desc')
                     ->limit(6)
                     ->get();
-
+*/
                 // === NUEVO: Cargar datos para el tab de análisis ===
                 $fecha_30dias = now()->subDays(30)->format('Y-m-d');
                 $hoy = now()->format('Y-m-d');
