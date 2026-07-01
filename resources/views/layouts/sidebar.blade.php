@@ -100,6 +100,32 @@
                     </div>
                 </li>
 
+                <!-- Proveedores -->
+                @if(Auth::user() and auth()->user()->can('menu_proveedores'))
+                    <li class="nav-item">
+                        <a class="nav-link menu-link" href="#sidebarProveedores" data-bs-toggle="collapse"
+                           role="button" aria-expanded="false" aria-controls="sidebarProveedores">
+                            <i class="bi bi-truck"></i> <span data-key="t-suppliers">Proveedores</span>
+                        </a>
+                        <div class="collapse menu-dropdown" id="sidebarProveedores">
+                            <ul class="nav nav-sm flex-column">
+                                <li class="nav-item">
+                                    <a href="/proveedores" class="nav-link" data-key="t-suppliers-list">
+                                        <i class="bi bi-search me-2"></i>Buscar Proveedor
+                                    </a>
+                                </li>
+                                @if(session('comercialid') == 6)
+                                    <li class="nav-item ">
+                                        <a href="{{ route('pagos-proveedores.index') }}" class="nav-link" data-key="t-list-view">
+                                            <i class="ri-motorbike-fill me-2"></i>Motos
+                                        </a>
+                                    </li>
+                                @endif
+                            </ul>
+                        </div>
+                    </li>
+                @endif
+
                 <li class="nav-item"  >
                     <a class="nav-link menu-link" href="#sidebarClientes" data-bs-toggle="collapse"
                        role="button" aria-expanded="false" aria-controls="sidebarClientes">
