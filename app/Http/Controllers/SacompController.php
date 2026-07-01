@@ -161,7 +161,7 @@ class SacompController extends Controller
 
         $compras = $compras->orderByDesc('id')->get();
 
-        dd($compras);
+       // dd($compras);
         return view('reporteCompras', compact( 'fechasreport',  'status', 'busqueda', 'comercialid', 'compras', 'fecha1', 'fecha2'));
     }
 
