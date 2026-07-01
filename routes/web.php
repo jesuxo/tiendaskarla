@@ -7,6 +7,7 @@ use App\Http\Controllers\TonerController;
 use App\Http\Controllers\UserSucursalController;
 use App\Http\Controllers\SacompController;
 use App\Http\Controllers\SainstaController;
+use App\Http\Controllers\SaprovController;
 use App\Http\Controllers\ProductoGrupoDescuentoController;
 use Illuminate\Support\Facades\Route;
 
@@ -155,11 +156,28 @@ Route::middleware(['check.admin'])->group(function () {
     });
 
 
-    Route::resource('proveedores', \App\Http\Controllers\SaprovController::class);
-    Route::controller(\App\Http\Controllers\SaprovController::class)->group(function () {
-        Route::get('saprov/json', 'json');
+    Route::resource('proveedores', SaprovController::class);
+
+    Route::get ('/proveedores/debug/{codprov}/{codprod}', [SaprovController::class, 'debug'])->name('proveedores.debug');
+    Route::post('/proveedores/buscarPredictivo', [SaprovController::class, 'buscarPredictivo'])->name('proveedores.buscarPredictivo');
+    Route::get ('/proveedores/{codprov}/productos-panel', [SaprovController::class, 'productosPanel'])->name('proveedores.productos-panel');
+    Route::post('/proveedores/{codprov}/productos-panel', [SaprovController::class, 'productosPanel'])->name('proveedores.productos-panel.post');
+
+    Route::get('proveedores/{codprov}/cuentas-por-pagar', [SaprovController::class, 'getCuentasPorPagar'])
+        ->name('proveedores.cuentas-por-pagar');
+
+    Route::get('proveedores/cuentas-por-pagar/resumen-general', [SaprovController::class, 'getResumenGeneralCuentasPorPagar'])
+        ->name('proveedores.cuentas-por-pagar.resumen-general');
+
+    Route::controller(SaprovController::class)->group(function () {
+        Route::get ('saprov/json', 'json');
+        Route::match(['get','post'],'/proveedores/{codprov?}/{tab?}', 'index')->name('proveedores.index');
+        Route::post('proveedoresupdate', 'proveedoresupdate')->name('proveedoresupdate');
+        Route::post('/proveedores/marcar-pagado', 'marcarPagado')->name('proveedores.marcar-pagado');
     });
 
+    Route::get('proveedores/pagos/pendientes', [SaprovController::class, 'pagosPendientes'])->name('proveedores.pagos-pendientes');
+    Route::get('proveedores-json', [SaprovController::class, 'json'])->name('proveedores.json');
     Route::resource('productos', \App\Http\Controllers\SaprodController::class);
     Route::controller(\App\Http\Controllers\SaprodController::class)->group(function () {
         Route::get('/saprod/marcas', [\App\Http\Controllers\SaprodController::class, 'getMarcas'])->name('saprod.marcas');
