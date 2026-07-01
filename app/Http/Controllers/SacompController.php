@@ -160,8 +160,7 @@ class SacompController extends Controller
         $compras = $compras->whereRaw(" tipocom in ('H','I') ")->limit(50);
 
         $compras = $compras->orderByDesc('id')->get();
-
-       // dd($compras);
+        dd($compras);
         return view('reporteCompras', compact( 'fechasreport',  'status', 'busqueda', 'comercialid', 'compras', 'fecha1', 'fecha2'));
     }
 
