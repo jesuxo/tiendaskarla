@@ -1023,7 +1023,7 @@ class SaprovController extends Controller
         $soloVencidos = $request->get('solovencidos', false);
         $fechavence = $request->get('fechavence', '');
 
-        $query = Cwcxcprv::where('signo', 1)
+        /*$query = Cwcxcprv::where('signo', 1)
             ->whereRaw('(monto - abonado) != 0')
             ->select(
                 'codprov',
@@ -1073,11 +1073,12 @@ class SaprovController extends Controller
             'abonado' => $resumen->sum('abonado'),
             'deuda' => $resumen->sum('deuda')
         ];
+*/
 
         return response()->json([
             'success' => true,
-            'data' => $resumen,
-            'totales' => $totales
+           // 'data' => $resumen,
+           // 'totales' => $totales
         ]);
     }
 

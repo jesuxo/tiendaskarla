@@ -527,224 +527,7 @@
                         </div>
 
                         <div class="tab-content">
-                            {{-- TAB 1: PAGOS PENDIENTES --}}
-                            @if($tab == 'tab1')
-                                <div class="tab-pane active" role="tabpanel">
-                                    <div class="card">
-                                        <div class="card-body">
-                                            <div class="table-responsive table-card mb-1">
-                                                <table width="100%" border="0" class="table align-middle table-nowrap">
-                                                    <tr bgcolor="#fff">
-                                                        <td width="10%" height="30" align="center" class="tdlineff">Fecha Viaje</td>
-                                                        <td width="8%" align="center" class="tdlineff">Viaje</td>
-                                                        <td width="15%" align="center" class="tdlineff">Cliente</td>
-                                                        <td width="12%" align="center" class="tdlineff">Modelo</td>
-                                                        <td width="5%" align="center" class="tdlineff">Cant.</td>
-                                                        <td width="10%" align="center" class="tdlineff">Transporte</td>
-                                                        <td width="10%" align="center" class="tdlineff">Retención</td>
-                                                        <td width="10%" align="center" class="tdlineff">Monto a Pagar</td>
-                                                        <td width="10%" align="center" class="tdlineff">Acciones</td>
-                                                    </tr>
 
-                                                    @php $totalPendiente = 0; @endphp
-                                                    @forelse($pagosPendientes as $pago)
-                                                        @php $totalPendiente += $pago->monto_esperado_cliente; @endphp
-                                                        <tr>
-                                                            <td height="30" align="center">
-                                                                {{ $pago->viaje->fecha_inicio->format('d/m/Y') }}
-                                                            </td>
-                                                            <td align="center">
-                                                                <a href="#" onclick="verViaje({{ $pago->viaje_id }})">
-                                                                    {{ $pago->viaje->folio ?? $pago->viaje_id }}
-                                                                </a>
-                                                            </td>
-                                                            <td align="left">{{ $pago->cliente->descrip ?? 'N/A' }}</td>
-                                                            <td align="left">{{ $pago->modelo_moto }}</td>
-                                                            <td align="center">{{ $pago->cantidad }}</td>
-                                                            <td align="right">${{ number_format($pago->monto_transporte_proveedor, 2) }}</td>
-                                                            <td align="right">${{ number_format($pago->retencion_proveedor, 2) }}</td>
-                                                            <td align="right" class="monto-pendiente">
-                                                                ${{ number_format($pago->monto_esperado_cliente, 2) }}
-                                                            </td>
-                                                            <td align="center">
-                                                                <button class="btn btn-sm btn-success"
-                                                                        onclick="marcarPagado({{ $pago->id }}, {{ $pago->monto_esperado_cliente }})">
-                                                                    <i class="ri-check-line"></i> Pagar
-                                                                </button>
-                                                            </td>
-                                                        </tr>
-                                                    @empty
-                                                        <tr>
-                                                            <td colspan="9" align="center" height="50">
-                                                                No hay pagos pendientes
-                                                            </td>
-                                                        </tr>
-                                                    @endforelse
-
-                                                    @if($pagosPendientes->count() > 0)
-                                                        <tr bgcolor="#eee">
-                                                            <td colspan="7" align="right"><strong>TOTAL PENDIENTE:</strong></td>
-                                                            <td align="right" class="monto-pendiente">
-                                                                <strong>${{ number_format($totalPendiente, 2) }}</strong>
-                                                            </td>
-                                                            <td></td>
-                                                        </tr>
-                                                    @endif
-                                                </table>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            @endif
-
-                            {{-- TAB 2: PAGOS REALIZADOS --}}
-                            @if($tab == 'tab2')
-                                <div class="tab-pane active" role="tabpanel">
-                                    <div class="card">
-                                        <div class="card-body">
-                                            <div class="table-responsive table-card mb-1">
-                                                <table width="100%" border="0" class="table align-middle table-nowrap">
-                                                    <tr bgcolor="#fff">
-                                                        <td width="10%" height="30" align="center" class="tdlineff">Fecha Pago</td>
-                                                        <td width="10%" align="center" class="tdlineff">Fecha Viaje</td>
-                                                        <td width="8%" align="center" class="tdlineff">Viaje</td>
-                                                        <td width="15%" align="center" class="tdlineff">Cliente</td>
-                                                        <td width="12%" align="center" class="tdlineff">Modelo</td>
-                                                        <td width="5%" align="center" class="tdlineff">Cant.</td>
-                                                        <td width="10%" align="center" class="tdlineff">Esperado</td>
-                                                        <td width="10%" align="center" class="tdlineff">Pagado</td>
-                                                        <td width="10%" align="center" class="tdlineff">Diferencia</td>
-                                                        <td width="10%" align="center" class="tdlineff">Notas</td>
-                                                    </tr>
-
-                                                    @php
-                                                        $totalEsperado = 0;
-                                                        $totalPagado = 0;
-                                                    @endphp
-                                                    @forelse($pagosRealizados as $pago)
-                                                        @php
-                                                            $totalEsperado += $pago->monto_esperado_cliente;
-                                                            $totalPagado += $pago->monto_real_cliente;
-                                                        @endphp
-                                                        <tr>
-                                                            <td height="30" align="center">
-                                                                {{ $pago->fecha_conciliacion ? \Carbon\Carbon::parse($pago->fecha_conciliacion)->format('d/m/Y') : 'N/A' }}
-                                                            </td>
-                                                            <td align="center">{{ $pago->viaje->fecha_inicio->format('d/m/Y') }}</td>
-                                                            <td align="center">
-                                                                <a href="#" onclick="verViaje({{ $pago->viaje_id }})">
-                                                                    {{ $pago->viaje->folio ?? $pago->viaje_id }}
-                                                                </a>
-                                                            </td>
-                                                            <td align="left">{{ $pago->cliente->descrip ?? 'N/A' }}</td>
-                                                            <td align="left">{{ $pago->modelo_moto }}</td>
-                                                            <td align="center">{{ $pago->cantidad }}</td>
-                                                            <td align="right">${{ number_format($pago->monto_esperado_cliente, 2) }}</td>
-                                                            <td align="right" class="monto-conciliado">${{ number_format($pago->monto_real_cliente, 2) }}</td>
-                                                            <td align="right" class="{{ ($pago->diferencia ?? 0) >= 0 ? 'text-success' : 'text-danger' }}">
-                                                                ${{ number_format($pago->diferencia ?? 0, 2) }}
-                                                            </td>
-                                                            <td align="left">
-                                                                <small>{{ Str::limit($pago->notas_conciliacion, 20) }}</small>
-                                                            </td>
-                                                        </tr>
-                                                    @empty
-                                                        <tr>
-                                                            <td colspan="10" align="center" height="50">
-                                                                No hay pagos realizados
-                                                            </td>
-                                                        </tr>
-                                                    @endforelse
-
-                                                    @if($pagosRealizados->count() > 0)
-                                                        <tr bgcolor="#eee">
-                                                            <td colspan="6" align="right"><strong>TOTALES:</strong></td>
-                                                            <td align="right"><strong>${{ number_format($totalEsperado, 2) }}</strong></td>
-                                                            <td align="right" class="monto-conciliado">
-                                                                <strong>${{ number_format($totalPagado, 2) }}</strong>
-                                                            </td>
-                                                            <td align="right">
-                                                                <strong class="{{ ($totalPagado - $totalEsperado) >= 0 ? 'text-success' : 'text-danger' }}">
-                                                                    ${{ number_format($totalPagado - $totalEsperado, 2) }}
-                                                                </strong>
-                                                            </td>
-                                                            <td></td>
-                                                        </tr>
-                                                    @endif
-                                                </table>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            @endif
-
-                            {{-- TAB 3: RESUMEN --}}
-                            @if($tab == 'tab3')
-                                <div class="tab-pane active" role="tabpanel">
-                                    <div class="row">
-                                        <div class="col-md-6">
-                                            <div class="card">
-                                                <div class="card-header bg-info text-white">
-                                                    <h6 class="mb-0">Resumen de Pagos por Mes</h6>
-                                                </div>
-                                                <div class="card-body">
-                                                    <div class="table-responsive">
-                                                        <table class="table table-sm">
-                                                            <thead>
-                                                            <tr>
-                                                                <th>Período</th>
-                                                                <th class="text-end">Pendiente</th>
-                                                                <th class="text-end">Pagado</th>
-                                                                <th class="text-end">Total</th>
-                                                            </tr>
-                                                            </thead>
-                                                            <tbody>
-                                                            @forelse($resumenPagos as $resumen)
-                                                                <tr>
-                                                                    <td>{{ \Carbon\Carbon::create()->month($resumen->mes)->format('F') }} {{ $resumen->anio }}</td>
-                                                                    <td class="text-end monto-pendiente">${{ number_format($resumen->total_pendiente ?? 0, 2) }}</td>
-                                                                    <td class="text-end monto-conciliado">${{ number_format($resumen->total_pagado ?? 0, 2) }}</td>
-                                                                    <td class="text-end">${{ number_format(($resumen->total_pendiente ?? 0) + ($resumen->total_pagado ?? 0), 2) }}</td>
-                                                                </tr>
-                                                            @empty
-                                                                <tr>
-                                                                    <td colspan="4" class="text-center">No hay datos de pagos</td>
-                                                                </tr>
-                                                            @endforelse
-                                                            </tbody>
-                                                        </table>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="col-md-6">
-                                            <div class="card">
-                                                <div class="card-header bg-success text-white">
-                                                    <h6 class="mb-0">Estadísticas</h6>
-                                                </div>
-                                                <div class="card-body">
-                                                    <div class="mb-3">
-                                                        <label>Total Pagos Pendientes</label>
-                                                        <h3 class="monto-pendiente">
-                                                            ${{ number_format($pagosPendientes->sum('monto_esperado_cliente'), 2) }}
-                                                        </h3>
-                                                    </div>
-                                                    <div class="mb-3">
-                                                        <label>Total Pagos Realizados</label>
-                                                        <h3 class="monto-conciliado">
-                                                            ${{ number_format($pagosRealizados->sum('monto_real_cliente'), 2) }}
-                                                        </h3>
-                                                    </div>
-                                                    <div>
-                                                        <label>Cantidad de Viajes</label>
-                                                        <h3>{{ $pagosPendientes->count() + $pagosRealizados->count() }}</h3>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            @endif
 
                             {{-- TAB 5: COMPRAS DEL PROVEEDOR --}}
                             @if($tab == 'tab5')
@@ -859,7 +642,7 @@
                             @endif
 
                             {{-- TAB 6: CUENTAS POR PAGAR --}}
-                            @if($tab == 'tab6')
+                            @if($tab == 'tab6666666')
                                 <div class="tab-pane active" role="tabpanel">
                                     <div class="card">
                                         <div class="card-header bg-light d-flex justify-content-between align-items-center flex-wrap">
@@ -908,7 +691,7 @@
                 </div>
             @else
                 {{-- Resumen General de Cuentas por Pagar --}}
-                <div class="card mt-3" id="resumenGeneralCxpCard">
+                <div class="card mt-3 d-none" id="resumenGeneralCxpCard" >
                     <div class="card-header bg-warning bg-opacity-25">
                         <div class="d-flex justify-content-between align-items-center flex-wrap">
                             <h6 class="mb-0">
@@ -1914,7 +1697,7 @@
             let currentFechavence = '';
 
             // Cargar datos iniciales
-            cargarResumenGeneralCuentas(false, '');
+           // cargarResumenGeneralCuentas(false, '');
 
             // Botón filtrar
             $('#btnFiltrarResumenGeneral').off('click').on('click', function() {
