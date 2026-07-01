@@ -25,12 +25,12 @@ class Sacomp extends Model
     }
 
     public function items()
-    { dd($this->codprov.' '.$this->tipocom.' '.$this->numerod.' '.$this->fk_sucursal);
+    {
         return $this->hasMany(Saitemcom::class, 'numerod', 'numerod')
-            ->where('saitemcom.codprov', $this->codprov)
-            ->where('saitemcom.tipocom', $this->tipocom)
-            ->where('saitemcom.numerod', $this->numerod)
-            ->where('saitemcom.fk_sucursal', $this->fk_sucursal);
+            ->whereColumn('codprov', 'codprov')
+            ->whereColumn('tipocom', 'tipocom')
+            ->whereColumn('numerod', 'numerod')
+            ->whereColumn('fk_sucursal', 'fk_sucursal');
     }
 
     public function seriales     (){
