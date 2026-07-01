@@ -161,11 +161,6 @@ class SacompController extends Controller
 
         $compras = $compras->orderByDesc('id')->get();
 
-        $compras = Sacomp::where(['numerod'=> '46003373', 'tipocom'=> 'H', 'codprov'=>'30242134-9'])
-            ->with(['items.producto.instancia'])
-            ->get();
-
-        dd($compras);
         return view('reporteCompras', compact( 'fechasreport',  'status', 'busqueda', 'comercialid', 'compras', 'fecha1', 'fecha2'));
     }
 
