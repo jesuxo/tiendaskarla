@@ -160,6 +160,11 @@ class SacompController extends Controller
         $compras = $compras->whereRaw(" tipocom in ('H','I') ")->limit(50);
 
         $compras = $compras->orderByDesc('id')->get();
+
+        $compras = Sacomp::where(['numerod'=> '46003373', 'tipocom'=> 'H', 'codprov'=>'30242134-9'])
+            ->with(['items.producto.instancia'])
+            ->get();
+
         dd($compras);
         return view('reporteCompras', compact( 'fechasreport',  'status', 'busqueda', 'comercialid', 'compras', 'fecha1', 'fecha2'));
     }
@@ -188,6 +193,7 @@ class SacompController extends Controller
         $documento = Sacomp::where('id', $id)
             ->with(['items.producto.instancia'])
             ->first();
+
         if($documento->status == 2){
             $documento->status= 1;
             $documento->save();
