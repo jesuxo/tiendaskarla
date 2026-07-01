@@ -25,8 +25,7 @@ class Sacomp extends Model
     }
 
     public function items()
-    {   $codprov = $this->codprov;
-
+    {
         return $this->hasMany(Saitemcom::class, 'numerod', 'numerod')
             ->where('saitemcom.codprov', $this->codprov)
             ->where('saitemcom.tipocom', $this->tipocom)

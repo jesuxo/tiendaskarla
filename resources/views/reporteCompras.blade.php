@@ -362,10 +362,10 @@
                                     </span>
                             </td>
                             <td class="text-center">
-                                <a href="/compra/{{$compra->id}}" target="_blank" class="documento-link">
+
                                     <i class="ri-file-list-line me-1"></i>
                                     {{ $compra->numerod }}
-                                </a>
+
                             </td>
                             <td class="text-center">
                                     <span class="badge-tipo {{ $badgeClass }}">

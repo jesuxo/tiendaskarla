@@ -157,29 +157,11 @@ class SacompController extends Controller
         if(isset($fec1) and $fec1 !='')
             $compras = $compras->whereBetween('created_at', [$fec1.' 00:00:00.00', $fec2.' 23:58:22.00']);
 
-        //if($status !=''){
-        /*if($status == 2)
-            $compras = $compras->where('status', $status)->whereRaw(" tipocom in ('U') ")->limit(50);
-        if($status != 2)
-            $compras = $compras->whereRaw(" tipocom in ('U','Y') ")->where('status', $status)->limit(500);*/
-        //}else{
         $compras = $compras->whereRaw(" tipocom in ('H','I') ")->limit(50);
-        // }
 
         $compras = $compras->orderByDesc('id')->get();
 
-        /*if(isset($compras) and count($compras) > 0)
-           foreach($compras as $index => $compra){
-               $seriales = 0;
-              foreach ($compra->seriales as $item){
-                   $seriales += 1;
-               }
-               if($seriales == 0){
-                   $compra->status = 0;
-                   $compra->save();
-               }
-            }
-        */
+        dd($compras);
         return view('reporteCompras', compact( 'fechasreport',  'status', 'busqueda', 'comercialid', 'compras', 'fecha1', 'fecha2'));
     }
 
