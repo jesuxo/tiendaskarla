@@ -146,7 +146,7 @@ class SacompController extends Controller
             }
         }
 
-        $compras = Sacomp::with(['sucursal.comercial','items']) //,'seriales'
+        $compras = Sacomp::with(['sucursal.comercial', 'items.producto.instancia']) //,'seriales'
         ->whereHas('sucursal.comercial', function($q) use ($comercialid) {
             $q->where('fk_comercial', $comercialid);
         });
