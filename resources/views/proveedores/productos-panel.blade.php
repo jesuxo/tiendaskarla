@@ -108,6 +108,40 @@
         .ver-existencias .ri-stack-line {
             font-size: 14px;
         }
+
+        /* Estilo para el color del producto */
+        .color-indicator {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+            vertical-align: middle;
+            margin-right: 5px;
+        }
+        .producto-con-color {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        /* Estilo para ventas por sucursal */
+        .ventas-sucursal {
+            font-size: 11px;
+            line-height: 1.4;
+        }
+        .ventas-sucursal .sucursal-item {
+            display: inline-block;
+            background: #f0f0f0;
+            padding: 1px 6px;
+            border-radius: 10px;
+            margin: 1px 2px;
+            font-size: 10px;
+        }
+        .ventas-sucursal .sucursal-item .cantidad {
+            font-weight: bold;
+            color: #0072c5;
+        }
     </style>
 @endsection
 @section('content')
@@ -334,11 +368,11 @@
                                             </tr>
                                         @endforeach
                                         <tfoot style="border-top: 1px solid #eeeeee">
-                                            <tr class="fw-bold">
-                                                <td>TOTAL</td>
-                                                <td class="text-center">{{ number_format($total_unidades, 0) }}</td>
-                                                <td class="text-end">100%</td>
-                                            </tr>
+                                        <tr class="fw-bold">
+                                            <td>TOTAL</td>
+                                            <td class="text-center">{{ number_format($total_unidades, 0) }}</td>
+                                            <td class="text-end">100%</td>
+                                        </tr>
                                         </tfoot>
                                         </tbody>
                                     </table>
@@ -435,6 +469,7 @@
                                 <th class="sortable" data-sort="codprod">Código <i class="ri-arrow-up-down-line"></i></th>
                                 <th class="sortable" data-sort="descrip">Producto <i class="ri-arrow-up-down-line"></i></th>
                                 <th class="sortable text-end" data-sort="stock">Stock Total <i class="ri-arrow-up-down-line"></i></th>
+                                <th class="sortable text-end" data-sort="unidades_vendidas">Unidades Vendidas <i class="ri-arrow-up-down-line"></i></th>
                                 <th class="sortable text-end" data-sort="dias_sin_venta">Días sin Venta <i class="ri-arrow-up-down-line"></i></th>
                                 <th class="sortable text-end" data-sort="dias_stock">Días Stock <i class="ri-arrow-up-down-line"></i></th>
                                 <th class="sortable text-end" data-sort="ultima_compra">Última Compra <i class="ri-arrow-up-down-line"></i></th>
@@ -445,11 +480,45 @@
                             @forelse($productos ?? [] as $producto)
                                 <tr>
                                     <td><small>{{ $producto->codprod }}</small></td>
-                                    <td>{{ $producto->descrip }}</td>
+                                    <td>
+                                        <div class="producto-con-color">
+                                            @if(!empty($producto->color))
+                                                <span class="color-indicator" style="background-color: {{ $producto->color }};" title="Color: {{ $producto->color }}"></span>
+                                            @endif
+                                            {{ $producto->descrip }}
+                                        </div>
+                                    </td>
 
                                     <!-- Stock Total -->
                                     <td class="text-end {{ $producto->existencia_actual < 10 ? 'stock-bajo' : 'stock-normal' }}">
                                         {{ number_format($producto->existencia_actual ?? 0, 0) }}
+                                    </td>
+
+                                    <!-- Unidades Vendidas con desglose por sucursal -->
+                                    <td class="text-end">
+                                        @if(($producto->unidades_vendidas ?? 0) > 0)
+                                            <div class="ventas-sucursal">
+                                                <span class="fw-bold">{{ number_format($producto->unidades_vendidas ?? 0, 0) }}</span>
+                                                @if(isset($producto->ventas_por_sucursal) && count($producto->ventas_por_sucursal) > 0)
+                                                    <div class="mt-1">
+                                                        @foreach($producto->ventas_por_sucursal as $sucId => $cantidad)
+                                                            @if($cantidad > 0)
+                                                                @php
+                                                                    $sucNombre = isset($sucursales) ? $sucursales->firstWhere('id', $sucId)->descrip ?? 'Suc ' . $sucId : 'Suc ' . $sucId;
+                                                                    $sucNombre = str_replace("SARA", "", $sucNombre);
+                                                                @endphp
+                                                                <span class="sucursal-item">
+                                                                    <span class="cantidad">{{ number_format($cantidad, 0) }}</span>
+                                                                    <span class="text-muted">{{ $sucNombre }}</span>
+                                                                </span>
+                                                            @endif
+                                                        @endforeach
+                                                    </div>
+                                                @endif
+                                            </div>
+                                        @else
+                                            <span class="text-muted">0</span>
+                                        @endif
                                     </td>
 
                                     <!-- Días sin Venta -->
@@ -538,7 +607,7 @@
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="7" class="text-center py-4">
+                                    <td colspan="8" class="text-center py-4">
                                         <i class="ri-inbox-line fs-1 text-muted"></i>
                                         <p class="text-muted mt-2">No hay productos para mostrar</p>
                                     </td>
@@ -912,27 +981,31 @@
                             aVal = parseFloat($(a).find('td:eq(2)').text().replace(/\./g, '').replace(',', '.')) || 0;
                             bVal = parseFloat($(b).find('td:eq(2)').text().replace(/\./g, '').replace(',', '.')) || 0;
                             break;
+                        case 'unidades_vendidas':
+                            // Extraer el número principal (sin los desgloses por sucursal)
+                            let aText = $(a).find('td:eq(3) .ventas-sucursal .fw-bold').text().trim() || '0';
+                            let bText = $(b).find('td:eq(3) .ventas-sucursal .fw-bold').text().trim() || '0';
+                            aVal = parseInt(aText.replace(/\./g, '')) || 0;
+                            bVal = parseInt(bText.replace(/\./g, '')) || 0;
+                            break;
                         case 'dias_sin_venta':
-                            let aText = $(a).find('td:eq(3)').text().trim();
-                            let bText = $(b).find('td:eq(3)').text().trim();
-                            aVal = aText === 'Nunca' ? 9999 : (parseInt(aText) || 0);
-                            bVal = bText === 'Nunca' ? 9999 : (parseInt(bText) || 0);
+                            let aTextDias = $(a).find('td:eq(4)').text().trim();
+                            let bTextDias = $(b).find('td:eq(4)').text().trim();
+                            aVal = aTextDias === 'Nunca' ? 9999 : (parseInt(aTextDias) || 0);
+                            bVal = bTextDias === 'Nunca' ? 9999 : (parseInt(bTextDias) || 0);
                             break;
                         case 'dias_stock':
-                            aVal = parseInt($(a).find('td:eq(4)').text()) || 0;
-                            bVal = parseInt($(b).find('td:eq(4)').text()) || 0;
+                            aVal = parseInt($(a).find('td:eq(5)').text()) || 0;
+                            bVal = parseInt($(b).find('td:eq(5)').text()) || 0;
                             break;
                         case 'ultima_compra':
-                            // Buscar la fecha dentro de la celda (td:eq(5))
-                            // La fecha está en un <small> con clase text-muted
-                            const aFechaElement = $(a).find('td:eq(5) small.text-muted').first();
-                            const bFechaElement = $(b).find('td:eq(5) small.text-muted').first();
+                            // Buscar la fecha dentro de la celda (td:eq(6))
+                            const aFechaElement = $(a).find('td:eq(6) small.text-muted').first();
+                            const bFechaElement = $(b).find('td:eq(6) small.text-muted').first();
 
-                            // Extraer solo la fecha (formato dd/mm/yyyy)
                             let aFechaStr = aFechaElement.text().trim().split(' ')[0];
                             let bFechaStr = bFechaElement.text().trim().split(' ')[0];
 
-                            // Si hay fecha, convertirla a timestamp, si no, usar 0
                             if (aFechaStr && aFechaStr.match(/\d{2}\/\d{2}\/\d{4}/)) {
                                 const [aDay, aMonth, aYear] = aFechaStr.split('/');
                                 aVal = new Date(aYear, aMonth - 1, aDay).getTime();
