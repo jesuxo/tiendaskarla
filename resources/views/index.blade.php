@@ -225,7 +225,7 @@
                     <div class="d-flex align-items-start justify-content-between">
                         <div>
                             <div class="stat-label">Costo Inventario</div>
-                            <a href="#" class="stretched-link text-decoration-none"> <!--/existencias-->
+                            <a href="/existencias" class="stretched-link text-decoration-none"> <!--/existencias-->
                                 <div class="mt-3 text-muted small">
                                     Ver reporte inventario <i class="ri-arrow-right-line"></i>
                                 </div>
@@ -246,7 +246,7 @@
                     <div class="d-flex align-items-start justify-content-between">
                         <div>
                             <div class="stat-label">Cuentas x Cobrar</div>
-                            <a href="#" class="stretched-link text-decoration-none"> <!--/cxc-->
+                            <a href="/cxc" class="stretched-link text-decoration-none"> <!--/cxc-->
                                 <div class="mt-3 text-muted small">
                                     Ver reporte cxc <i class="ri-arrow-right-line"></i>
                                 </div>

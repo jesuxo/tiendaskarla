@@ -8,6 +8,7 @@ use App\Http\Controllers\UserSucursalController;
 use App\Http\Controllers\SacompController;
 use App\Http\Controllers\SainstaController;
 use App\Http\Controllers\SaprovController;
+use App\Http\Controllers\SaacxcController;
 use App\Http\Controllers\ProductoGrupoDescuentoController;
 use Illuminate\Support\Facades\Route;
 
@@ -232,9 +233,17 @@ Route::middleware(['check.admin'])->group(function () {
         Route::get('sadepo/json', 'json');
     });
 
-    Route::controller(\App\Http\Controllers\SaacxcController::class)->group(function () {
-        Route::match(['get','post'],'cxc/{id?}', 'saacxc');
+    Route::prefix('cxcweb')->name('cxcweb.')->group(function () {
+        Route::get('/instrumentos', [SaacxcController::class, 'getInstrumentosPago'])->name('instrumentos');
+        Route::post('/procesar-pago-web', [SaacxcController::class, 'procesarPagoWeb'])->name('procesar.pago.web');
+    });
+
+    Route::controller(SaacxcController::class)->group(function () {
+        Route::match(['get','post'],'cxc/{id?}', 'saacxc')->name('saacxc');
         Route::post('/cxclist', 'cxclist');
+        Route::post('/cxcabonarweb', 'cxcabonarweb');
+        Route::post('/cxc/clientes-por-sucursal', 'clientesPorSucursal');
+        Route::post('/cxcdescuento',  'aplicarDescuento')->name('cxcdescuento');
     });
 
     Route::resource('instpago', \App\Http\Controllers\SatarjController::class);
