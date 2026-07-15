@@ -109,38 +109,34 @@
             font-size: 14px;
         }
 
-        /* Estilo para el color del producto */
-        .color-indicator {
-            display: inline-block;
-            width: 16px;
-            height: 16px;
-            border-radius: 4px;
-            border: 1px solid #ddd;
-            vertical-align: middle;
-            margin-right: 5px;
+        /* Estilo para el color del producto - solo texto */
+        .producto-color-text {
+            font-size: 11px;
+            color: #666;
+            margin-left: 5px;
         }
-        .producto-con-color {
-            display: flex;
-            align-items: center;
-            gap: 6px;
+        .producto-color-text::before {
+            content: "• ";
         }
 
-        /* Estilo para ventas por sucursal */
-        .ventas-sucursal {
-            font-size: 11px;
-            line-height: 1.4;
+        /* Estilo para celdas de sucursales */
+        .sucursal-col {
+            text-align: center;
+            font-size: 12px;
+            min-width: 60px;
         }
-        .ventas-sucursal .sucursal-item {
-            display: inline-block;
-            background: #f0f0f0;
-            padding: 1px 6px;
-            border-radius: 10px;
-            margin: 1px 2px;
-            font-size: 10px;
-        }
-        .ventas-sucursal .sucursal-item .cantidad {
+        .sucursal-col .cantidad {
             font-weight: bold;
             color: #0072c5;
+        }
+        .sucursal-col .sin-ventas {
+            color: #ccc;
+            font-size: 10px;
+        }
+        .sucursal-header {
+            font-size: 10px;
+            white-space: nowrap;
+            text-align: center;
         }
     </style>
 @endsection
@@ -469,7 +465,12 @@
                                 <th class="sortable" data-sort="codprod">Código <i class="ri-arrow-up-down-line"></i></th>
                                 <th class="sortable" data-sort="descrip">Producto <i class="ri-arrow-up-down-line"></i></th>
                                 <th class="sortable text-end" data-sort="stock">Stock Total <i class="ri-arrow-up-down-line"></i></th>
-                                <th class="sortable text-end" data-sort="unidades_vendidas">Unidades Vendidas <i class="ri-arrow-up-down-line"></i></th>
+                                @foreach($sucursales as $sucursal)
+                                    <th class="sucursal-header sortable" data-sort="sucursal_{{ $sucursal->id }}">
+                                        {{ str_replace("SARA", "", $sucursal->descrip) }}
+                                        <i class="ri-arrow-up-down-line"></i>
+                                    </th>
+                                @endforeach
                                 <th class="sortable text-end" data-sort="dias_sin_venta">Días sin Venta <i class="ri-arrow-up-down-line"></i></th>
                                 <th class="sortable text-end" data-sort="dias_stock">Días Stock <i class="ri-arrow-up-down-line"></i></th>
                                 <th class="sortable text-end" data-sort="ultima_compra">Última Compra <i class="ri-arrow-up-down-line"></i></th>
@@ -481,12 +482,10 @@
                                 <tr>
                                     <td><small>{{ $producto->codprod }}</small></td>
                                     <td>
-                                        <div class="producto-con-color">
-                                            @if(!empty($producto->color))
-                                                <span class="color-indicator" style="background-color: {{ $producto->color }};" title="Color: {{ $producto->color }}"></span>
-                                            @endif
-                                            {{ $producto->descrip }}
-                                        </div>
+                                        {{ $producto->descrip }}
+                                        @if(!empty($producto->color))
+                                            <span class="producto-color-text">{{ $producto->color }}</span>
+                                        @endif
                                     </td>
 
                                     <!-- Stock Total -->
@@ -494,32 +493,19 @@
                                         {{ number_format($producto->existencia_actual ?? 0, 0) }}
                                     </td>
 
-                                    <!-- Unidades Vendidas con desglose por sucursal -->
-                                    <td class="text-end">
-                                        @if(($producto->unidades_vendidas ?? 0) > 0)
-                                            <div class="ventas-sucursal">
-                                                <span class="fw-bold">{{ number_format($producto->unidades_vendidas ?? 0, 0) }}</span>
-                                                @if(isset($producto->ventas_por_sucursal) && count($producto->ventas_por_sucursal) > 0)
-                                                    <div class="mt-1">
-                                                        @foreach($producto->ventas_por_sucursal as $sucId => $cantidad)
-                                                            @if($cantidad > 0)
-                                                                @php
-                                                                    $sucNombre = isset($sucursales) ? $sucursales->firstWhere('id', $sucId)->descrip ?? 'Suc ' . $sucId : 'Suc ' . $sucId;
-                                                                    $sucNombre = str_replace("SARA", "", $sucNombre);
-                                                                @endphp
-                                                                <span class="sucursal-item">
-                                                                    <span class="cantidad">{{ number_format($cantidad, 0) }}</span>
-                                                                    <span class="text-muted">{{ $sucNombre }}</span>
-                                                                </span>
-                                                            @endif
-                                                        @endforeach
-                                                    </div>
-                                                @endif
-                                            </div>
-                                        @else
-                                            <span class="text-muted">0</span>
-                                        @endif
-                                    </td>
+                                    <!-- Columnas por sucursal -->
+                                    @foreach($sucursales as $sucursal)
+                                        <td class="sucursal-col">
+                                            @php
+                                                $cantidad = $producto->ventas_por_sucursal[$sucursal->id] ?? 0;
+                                            @endphp
+                                            @if($cantidad > 0)
+                                                <span class="cantidad">{{ number_format($cantidad, 0) }}</span>
+                                            @else
+                                                <span class="sin-ventas">-</span>
+                                            @endif
+                                        </td>
+                                    @endforeach
 
                                     <!-- Días sin Venta -->
                                     <td class="text-end">
@@ -607,7 +593,7 @@
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="8" class="text-center py-4">
+                                    <td colspan="{{ 4 + count($sucursales) + 4 }}" class="text-center py-4">
                                         <i class="ri-inbox-line fs-1 text-muted"></i>
                                         <p class="text-muted mt-2">No hay productos para mostrar</p>
                                     </td>
@@ -838,7 +824,7 @@
                 $('#compraModalBody').html(html);
             }
 
-            // ... (código de gráficos existente) ...
+            // ========== GRÁFICO TOP PRODUCTOS ==========
             @if(isset($top_productos) && count($top_productos) > 0)
                 try {
                 var ctx = document.getElementById('topProductosChart').getContext('2d');
@@ -898,7 +884,7 @@
             $('#topProductosChart').parent().html('<div class="alert alert-info">No hay ventas en el período seleccionado</div>');
             @endif
 
-            // Gráfico de Distribución
+            // ========== GRÁFICO DE DISTRIBUCIÓN ==========
             @if(isset($kpi) && ($kpi['total_ventas'] > 0 || $kpi['valor_inventario'] > 0 || $kpi['total_compras'] > 0))
                 try {
                 var ctx2 = document.getElementById('distribucionChart').getContext('2d');
@@ -968,60 +954,79 @@
                 rows.sort(function(a, b) {
                     let aVal, bVal;
 
-                    switch(column) {
-                        case 'codprod':
-                            aVal = $(a).find('td:eq(0)').text().trim();
-                            bVal = $(b).find('td:eq(0)').text().trim();
-                            break;
-                        case 'descrip':
-                            aVal = $(a).find('td:eq(1)').text().trim();
-                            bVal = $(b).find('td:eq(1)').text().trim();
-                            break;
-                        case 'stock':
-                            aVal = parseFloat($(a).find('td:eq(2)').text().replace(/\./g, '').replace(',', '.')) || 0;
-                            bVal = parseFloat($(b).find('td:eq(2)').text().replace(/\./g, '').replace(',', '.')) || 0;
-                            break;
-                        case 'unidades_vendidas':
-                            // Extraer el número principal (sin los desgloses por sucursal)
-                            let aText = $(a).find('td:eq(3) .ventas-sucursal .fw-bold').text().trim() || '0';
-                            let bText = $(b).find('td:eq(3) .ventas-sucursal .fw-bold').text().trim() || '0';
-                            aVal = parseInt(aText.replace(/\./g, '')) || 0;
-                            bVal = parseInt(bText.replace(/\./g, '')) || 0;
-                            break;
-                        case 'dias_sin_venta':
-                            let aTextDias = $(a).find('td:eq(4)').text().trim();
-                            let bTextDias = $(b).find('td:eq(4)').text().trim();
-                            aVal = aTextDias === 'Nunca' ? 9999 : (parseInt(aTextDias) || 0);
-                            bVal = bTextDias === 'Nunca' ? 9999 : (parseInt(bTextDias) || 0);
-                            break;
-                        case 'dias_stock':
-                            aVal = parseInt($(a).find('td:eq(5)').text()) || 0;
-                            bVal = parseInt($(b).find('td:eq(5)').text()) || 0;
-                            break;
-                        case 'ultima_compra':
-                            // Buscar la fecha dentro de la celda (td:eq(6))
-                            const aFechaElement = $(a).find('td:eq(6) small.text-muted').first();
-                            const bFechaElement = $(b).find('td:eq(6) small.text-muted').first();
-
-                            let aFechaStr = aFechaElement.text().trim().split(' ')[0];
-                            let bFechaStr = bFechaElement.text().trim().split(' ')[0];
-
-                            if (aFechaStr && aFechaStr.match(/\d{2}\/\d{2}\/\d{4}/)) {
-                                const [aDay, aMonth, aYear] = aFechaStr.split('/');
-                                aVal = new Date(aYear, aMonth - 1, aDay).getTime();
-                            } else {
-                                aVal = 0;
+                    // Detectar si es una columna de sucursal
+                    const sucursalMatch = column.match(/^sucursal_(\d+)$/);
+                    if (sucursalMatch) {
+                        // Es una columna de sucursal
+                        const sucursalId = sucursalMatch[1];
+                        // Encontrar el índice de la columna de sucursal
+                        // Las columnas están: codprod(0), producto(1), stock(2), sucursales(3 a 3+n), dias_sin_venta, dias_stock, ultima_compra, depositos
+                        // La primera sucursal está en la posición 3
+                        const sucursalIndex = 3 + {{ $sucursales->search(function($s) { return true; }) ?? 0 }};
+                        // Mejor: calcular el índice dinámicamente
+                        const $headers = $('thead th');
+                        let colIndex = 0;
+                        $headers.each(function(index) {
+                            if ($(this).data('sort') === column) {
+                                colIndex = index;
+                                return false;
                             }
+                        });
 
-                            if (bFechaStr && bFechaStr.match(/\d{2}\/\d{2}\/\d{4}/)) {
-                                const [bDay, bMonth, bYear] = bFechaStr.split('/');
-                                bVal = new Date(bYear, bMonth - 1, bDay).getTime();
-                            } else {
-                                bVal = 0;
-                            }
-                            break;
-                        default:
-                            return 0;
+                        // Obtener el valor de la celda en esa columna
+                        const aText = $(a).find('td:eq(' + colIndex + ')').text().trim();
+                        const bText = $(b).find('td:eq(' + colIndex + ')').text().trim();
+                        aVal = parseInt(aText.replace(/\./g, '')) || 0;
+                        bVal = parseInt(bText.replace(/\./g, '')) || 0;
+                    } else {
+                        switch(column) {
+                            case 'codprod':
+                                aVal = $(a).find('td:eq(0)').text().trim();
+                                bVal = $(b).find('td:eq(0)').text().trim();
+                                break;
+                            case 'descrip':
+                                aVal = $(a).find('td:eq(1)').text().trim();
+                                bVal = $(b).find('td:eq(1)').text().trim();
+                                break;
+                            case 'stock':
+                                aVal = parseFloat($(a).find('td:eq(2)').text().replace(/\./g, '').replace(',', '.')) || 0;
+                                bVal = parseFloat($(b).find('td:eq(2)').text().replace(/\./g, '').replace(',', '.')) || 0;
+                                break;
+                            case 'dias_sin_venta':
+                                let aTextDias = $(a).find('td:eq(' + (3 + {{ count($sucursales) }}) + ')').text().trim();
+                                let bTextDias = $(b).find('td:eq(' + (3 + {{ count($sucursales) }}) + ')').text().trim();
+                                aVal = aTextDias === 'Nunca' ? 9999 : (parseInt(aTextDias) || 0);
+                                bVal = bTextDias === 'Nunca' ? 9999 : (parseInt(bTextDias) || 0);
+                                break;
+                            case 'dias_stock':
+                                aVal = parseInt($(a).find('td:eq(' + (4 + {{ count($sucursales) }}) + ')').text()) || 0;
+                                bVal = parseInt($(b).find('td:eq(' + (4 + {{ count($sucursales) }}) + ')').text()) || 0;
+                                break;
+                            case 'ultima_compra':
+                                const colIndex = 5 + {{ count($sucursales) }};
+                                const aFechaElement = $(a).find('td:eq(' + colIndex + ') small.text-muted').first();
+                                const bFechaElement = $(b).find('td:eq(' + colIndex + ') small.text-muted').first();
+
+                                let aFechaStr = aFechaElement.text().trim().split(' ')[0];
+                                let bFechaStr = bFechaElement.text().trim().split(' ')[0];
+
+                                if (aFechaStr && aFechaStr.match(/\d{2}\/\d{2}\/\d{4}/)) {
+                                    const [aDay, aMonth, aYear] = aFechaStr.split('/');
+                                    aVal = new Date(aYear, aMonth - 1, aDay).getTime();
+                                } else {
+                                    aVal = 0;
+                                }
+
+                                if (bFechaStr && bFechaStr.match(/\d{2}\/\d{2}\/\d{4}/)) {
+                                    const [bDay, bMonth, bYear] = bFechaStr.split('/');
+                                    bVal = new Date(bYear, bMonth - 1, bDay).getTime();
+                                } else {
+                                    bVal = 0;
+                                }
+                                break;
+                            default:
+                                return 0;
+                        }
                     }
 
                     if (direction === 'asc') {
