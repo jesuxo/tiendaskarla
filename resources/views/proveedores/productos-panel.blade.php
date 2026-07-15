@@ -138,6 +138,23 @@
             white-space: nowrap;
             text-align: center;
         }
+
+        /* Estilo para columna total vendido */
+        .total-vendido-col {
+            text-align: center;
+            font-weight: bold;
+            font-size: 13px;
+            color: #0072c5;
+        }
+        .total-vendido-col .sin-ventas {
+            color: #ccc;
+            font-size: 10px;
+            font-weight: normal;
+        }
+        .total-vendido-header {
+            text-align: center;
+            white-space: nowrap;
+        }
     </style>
 @endsection
 @section('content')
@@ -465,6 +482,10 @@
                                 <th class="sortable" data-sort="codprod">Código <i class="ri-arrow-up-down-line"></i></th>
                                 <th class="sortable" data-sort="descrip">Producto <i class="ri-arrow-up-down-line"></i></th>
                                 <th class="sortable text-end" data-sort="stock">Stock Total <i class="ri-arrow-up-down-line"></i></th>
+                                <th class="total-vendido-header sortable" data-sort="total_vendido">
+                                    Total Vendido
+                                    <i class="ri-arrow-up-down-line"></i>
+                                </th>
                                 @foreach($sucursales as $sucursal)
                                     <th class="sucursal-header sortable" data-sort="sucursal_{{ $sucursal->id }}">
                                         {{ str_replace("SARA", "", $sucursal->descrip) }}
@@ -479,6 +500,9 @@
                             </thead>
                             <tbody id="productosTableBody">
                             @forelse($productos ?? [] as $producto)
+                                @php
+                                    $totalVendido = $producto->unidades_vendidas ?? 0;
+                                @endphp
                                 <tr>
                                     <td><small>{{ $producto->codprod }}</small></td>
                                     <td>
@@ -491,6 +515,15 @@
                                     <!-- Stock Total -->
                                     <td class="text-end {{ $producto->existencia_actual < 10 ? 'stock-bajo' : 'stock-normal' }}">
                                         {{ number_format($producto->existencia_actual ?? 0, 0) }}
+                                    </td>
+
+                                    <!-- Total Vendido -->
+                                    <td class="total-vendido-col">
+                                        @if($totalVendido > 0)
+                                            <span class="cantidad">{{ number_format($totalVendido, 0) }}</span>
+                                        @else
+                                            <span class="sin-ventas">0</span>
+                                        @endif
                                     </td>
 
                                     <!-- Columnas por sucursal -->
@@ -960,10 +993,6 @@
                         // Es una columna de sucursal
                         const sucursalId = sucursalMatch[1];
                         // Encontrar el índice de la columna de sucursal
-                        // Las columnas están: codprod(0), producto(1), stock(2), sucursales(3 a 3+n), dias_sin_venta, dias_stock, ultima_compra, depositos
-                        // La primera sucursal está en la posición 3
-                        const sucursalIndex = 3 + {{ $sucursales->search(function($s) { return true; }) ?? 0 }};
-                        // Mejor: calcular el índice dinámicamente
                         const $headers = $('thead th');
                         let colIndex = 0;
                         $headers.each(function(index) {
@@ -992,20 +1021,29 @@
                                 aVal = parseFloat($(a).find('td:eq(2)').text().replace(/\./g, '').replace(',', '.')) || 0;
                                 bVal = parseFloat($(b).find('td:eq(2)').text().replace(/\./g, '').replace(',', '.')) || 0;
                                 break;
+                            case 'total_vendido':
+                                const totalColIndex = 3;
+                                const aTextTotal = $(a).find('td:eq(' + totalColIndex + ')').text().trim();
+                                const bTextTotal = $(b).find('td:eq(' + totalColIndex + ')').text().trim();
+                                aVal = parseInt(aTextTotal.replace(/\./g, '')) || 0;
+                                bVal = parseInt(bTextTotal.replace(/\./g, '')) || 0;
+                                break;
                             case 'dias_sin_venta':
-                                let aTextDias = $(a).find('td:eq(' + (3 + {{ count($sucursales) }}) + ')').text().trim();
-                                let bTextDias = $(b).find('td:eq(' + (3 + {{ count($sucursales) }}) + ')').text().trim();
+                                const diasSinVentaIndex = 4 + {{ count($sucursales) }};
+                                let aTextDias = $(a).find('td:eq(' + diasSinVentaIndex + ')').text().trim();
+                                let bTextDias = $(b).find('td:eq(' + diasSinVentaIndex + ')').text().trim();
                                 aVal = aTextDias === 'Nunca' ? 9999 : (parseInt(aTextDias) || 0);
                                 bVal = bTextDias === 'Nunca' ? 9999 : (parseInt(bTextDias) || 0);
                                 break;
                             case 'dias_stock':
-                                aVal = parseInt($(a).find('td:eq(' + (4 + {{ count($sucursales) }}) + ')').text()) || 0;
-                                bVal = parseInt($(b).find('td:eq(' + (4 + {{ count($sucursales) }}) + ')').text()) || 0;
+                                const diasStockIndex = 5 + {{ count($sucursales) }};
+                                aVal = parseInt($(a).find('td:eq(' + diasStockIndex + ')').text()) || 0;
+                                bVal = parseInt($(b).find('td:eq(' + diasStockIndex + ')').text()) || 0;
                                 break;
                             case 'ultima_compra':
-                                const colIndex = 5 + {{ count($sucursales) }};
-                                const aFechaElement = $(a).find('td:eq(' + colIndex + ') small.text-muted').first();
-                                const bFechaElement = $(b).find('td:eq(' + colIndex + ') small.text-muted').first();
+                                const ultimaCompraIndex = 6 + {{ count($sucursales) }};
+                                const aFechaElement = $(a).find('td:eq(' + ultimaCompraIndex + ') small.text-muted').first();
+                                const bFechaElement = $(b).find('td:eq(' + ultimaCompraIndex + ') small.text-muted').first();
 
                                 let aFechaStr = aFechaElement.text().trim().split(' ')[0];
                                 let bFechaStr = bFechaElement.text().trim().split(' ')[0];
