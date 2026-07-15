@@ -200,6 +200,9 @@ class SaprovController extends Controller
     /**
      * Obtener productos del proveedor con estadísticas
      */
+    /**
+     * Obtener productos del proveedor con estadísticas
+     */
     private function getProductosProveedor($codprov, $fecha_desde, $fecha_hasta, $orden, $filtro = 'todos')
     {
         $comercial = session('comercialid');
@@ -213,7 +216,8 @@ class SaprovController extends Controller
         $sucursalIds = implode(",", $sucursalarr->toArray());
 
         // Obtener todos los códigos de productos que ha comprado este proveedor
-        $codigos_productos = Saitemcom::where('codprov', $codprov)->whereRaw("fk_sucursal in ($sucursalIds)")
+        $codigos_productos = Saitemcom::where('codprov', $codprov)
+            ->whereRaw("fk_sucursal in ($sucursalIds)")
             ->whereIn('tipocom', ['H', 'I'])
             ->distinct()
             ->pluck('coditem')
@@ -253,7 +257,7 @@ class SaprovController extends Controller
             $producto = new \stdClass();
             $producto->codprod = $productoModel->codprod;
             $producto->descrip = $productoModel->descrip;
-            $producto->color = $productoModel->color ?? ''; // Agregar color
+            $producto->color = $productoModel->color ?? '';
             $producto->marca = $productoModel->marca;
             $producto->preciod = $productoModel->preciod;
             $producto->costod = $productoModel->costod;
@@ -274,8 +278,12 @@ class SaprovController extends Controller
             // ========== VENTAS FILTRADAS POR PROVEEDOR ==========
             $infoSerial = $this->getProductoSerialInfo($producto->codprod, $comercial);
 
-            // Array para almacenar ventas por sucursal
-            $producto->ventas_por_sucursal = [];
+            // Inicializar ventas por sucursal en 0
+            $ventasPorSucursal = [];
+            foreach ($sucursales as $suc) {
+                $ventasPorSucursal[$suc->id] = 0;
+            }
+            $producto->ventas_por_sucursal = $ventasPorSucursal;
             $producto->unidades_vendidas = 0;
             $producto->total_ventas = 0;
 
@@ -284,6 +292,34 @@ class SaprovController extends Controller
                 $serialesCompra = $serialesPorProducto[$producto->codprod] ?? collect([]);
 
                 if ($serialesCompra->isNotEmpty()) {
+                    // Obtener ventas agrupadas por sucursal
+                    $ventasPorSucursalDB = DB::table('saitemfac as ifac')
+                        ->join('saseprfac as sf', function ($join) {
+                            $join->on('ifac.TipoFac', '=', 'sf.TipoFac')
+                                ->on('ifac.NumeroD', '=', 'sf.NumeroD')
+                                ->on('ifac.NroLinea', '=', 'sf.NroLinea')
+                                ->on('ifac.CodItem', '=', 'sf.CodItem');
+                        })
+                        ->whereIn('sf.NroSerial', $serialesCompra)
+                        ->where('ifac.CodItem', $producto->codprod)
+                        ->whereIn('ifac.TipoFac', ['A', 'B'])
+                        ->whereBetween('ifac.FechaE', [$fecha_desde, $fecha_hasta])
+                        ->whereRaw("ifac.fk_sucursal in ($sucursalIds)")
+                        ->select(
+                            'ifac.fk_sucursal',
+                            DB::raw('SUM(ifac.cantidad * ifac.signo) as total_vendido')
+                        )
+                        ->groupBy('ifac.fk_sucursal')
+                        ->get();
+
+                    // Asignar ventas por sucursal
+                    foreach ($ventasPorSucursalDB as $venta) {
+                        if (isset($producto->ventas_por_sucursal[$venta->fk_sucursal])) {
+                            $producto->ventas_por_sucursal[$venta->fk_sucursal] = $venta->total_vendido;
+                        }
+                    }
+
+                    // Obtener ventas totales
                     $itemsVenta = $this->getItemsVentaPorSeriales(
                         $producto->codprod,
                         $serialesCompra,
@@ -291,19 +327,6 @@ class SaprovController extends Controller
                         $fecha_hasta,
                         $sucursalIds
                     );
-
-                    // Inicializar ventas por sucursal
-                    foreach ($sucursales as $suc) {
-                        $producto->ventas_por_sucursal[$suc->id] = 0;
-                    }
-
-                    // Agrupar por sucursal
-                    foreach ($itemsVenta as $item) {
-                        $sucursalId = $item->fk_sucursal ?? null;
-                        if ($sucursalId && isset($producto->ventas_por_sucursal[$sucursalId])) {
-                            $producto->ventas_por_sucursal[$sucursalId] += $item->cantidad * $item->signo;
-                        }
-                    }
 
                     $producto->unidades_vendidas = $itemsVenta->where('signo', '>', 0)->sum('cantidad');
                     $producto->total_ventas = $itemsVenta->sum(function ($item) {
@@ -322,40 +345,31 @@ class SaprovController extends Controller
                     $producto->unidades_vendidas = 0;
                     $producto->total_ventas = 0;
                     $producto->dias_sin_venta = null;
-                    // Inicializar ventas por sucursal en 0
-                    foreach ($sucursales as $suc) {
-                        $producto->ventas_por_sucursal[$suc->id] = 0;
-                    }
                 }
             } else {
-                // Productos SIN serial: no podemos distinguir, se cuentan todas las ventas
-                // Obtenemos las ventas agrupadas por sucursal
-                $ventasPorSucursal = Saitemfac::where('CodItem', $producto->codprod)
+                // Productos SIN serial: contamos todas las ventas agrupadas por sucursal
+                $ventasPorSucursalDB = Saitemfac::where('CodItem', $producto->codprod)
                     ->whereRaw("fk_sucursal in ($sucursalIds)")
                     ->whereIn('TipoFac', ['A', 'B'])
-                    ->where('signo', '>', 0)
                     ->whereBetween('FechaE', [$fecha_desde, $fecha_hasta])
-                    ->select('fk_sucursal', DB::raw('SUM(cantidad * signo) as total'))
+                    ->select('fk_sucursal', DB::raw('SUM(cantidad * signo) as total_vendido'))
                     ->groupBy('fk_sucursal')
                     ->get();
 
-                // Inicializar ventas por sucursal
-                foreach ($sucursales as $suc) {
-                    $producto->ventas_por_sucursal[$suc->id] = 0;
-                }
-
-                foreach ($ventasPorSucursal as $venta) {
+                // Asignar ventas por sucursal
+                foreach ($ventasPorSucursalDB as $venta) {
                     if (isset($producto->ventas_por_sucursal[$venta->fk_sucursal])) {
-                        $producto->ventas_por_sucursal[$venta->fk_sucursal] = $venta->total;
+                        $producto->ventas_por_sucursal[$venta->fk_sucursal] = $venta->total_vendido;
                     }
                 }
 
+                // Calcular total de unidades vendidas
                 $producto->unidades_vendidas = Saitemfac::where('CodItem', $producto->codprod)
                     ->whereRaw("fk_sucursal in ($sucursalIds)")
                     ->whereIn('TipoFac', ['A', 'B'])
                     ->where('signo', '>', 0)
                     ->whereBetween('FechaE', [$fecha_desde, $fecha_hasta])
-                    ->select(DB::raw('SUM( cantidad * signo) as total'))
+                    ->select(DB::raw('SUM(cantidad * signo) as total'))
                     ->value('total') ?? 0;
 
                 $producto->total_ventas = Saitemfac::where('CodItem', $producto->codprod)
@@ -480,9 +494,6 @@ class SaprovController extends Controller
             default:
                 $productos = $productos->sortByDesc('total_ventas');
         }
-
-        // También pasar las sucursales a la vista
-        view()->share('sucursales', $sucursales);
 
         return $productos->values();
     }
