@@ -1325,36 +1325,59 @@ class SaprodController extends Controller
 
     public function store(Request $request)
     {
-        $comercial = session('comercialid') ;
+        $comercial = session('comercialid');
+
+        // Validar que no exista el código
+        $request->validate([
+            'codinst'              => 'required|exists:sainsta,codinst',
+            'itemscolores'         => 'required|array|min:1',
+            'itemscolores.*.color' => 'required|string|min:1'
+        ]);
 
         $itemscolores = $request->itemscolores;
 
-        if(isset($itemscolores)){
+        foreach ($itemscolores as $itemscolore) {
+            $color = $itemscolore['color'];
+            if(isset($color) && $color != '' && strlen($color) > 0){
 
-            foreach ($itemscolores as $itemscolore) {
-                $color = $itemscolore['color'];
-                if(isset($color) and $color !='' and strlen($color)>0){
+                $codprod = $this->lastprod($request->codinst);
 
-                    $codprod = $this->lastprod($request->codinst);
-                    $newprod = new Saprod();
-                    $newprod->fill($request->all());
-                    $newprod->codprod   = $codprod;
-                    $newprod->color     = $color;
-                    $newprod->comercial = $comercial;
+                // VERIFICAR QUE EL CÓDIGO NO EXISTA YA
+                $existe = Saprod::where('codprod', $codprod)
+                    ->where('comercial', $comercial)
+                    ->exists();
 
-                    if($comercial == 1)
-                        $newprod->esexento = 1;
-
-                    $newprod->save();
+                // Si existe, generar uno nuevo
+                $intento = 0;
+                while ($existe && $intento < 10) {
+                    $intento++;
+                    // Intentar con un sufijo numérico
+                    $codprod = $this->lastprod($request->codinst) . $intento;
+                    $existe = Saprod::where('codprod', $codprod)
+                        ->where('comercial', $comercial)
+                        ->exists();
                 }
 
-            }
+                // Si después de 10 intentos aún existe, generar con timestamp
+                if ($existe) {
+                    $codprod = $this->lastprod($request->codinst) . time();
+                }
 
+                $newprod = new Saprod();
+                $newprod->fill($request->all());
+                $newprod->codprod   = $codprod;
+                $newprod->color     = $color;
+                $newprod->comercial = $comercial;
+
+                if($comercial == 1)
+                    $newprod->esexento = 1;
+
+                $newprod->save();
+            }
         }
 
-
-
-        return redirect()->route('productos.index');
+        return redirect()->route('productos.index')
+            ->with('success', 'Productos creados exitosamente');
     }
 
     public function show($id)
