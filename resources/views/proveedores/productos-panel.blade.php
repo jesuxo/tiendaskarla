@@ -510,8 +510,8 @@
                                         @if(!empty($producto->color))
                                             <span class="producto-color-text">{{ $producto->color }}</span>
                                         @endif
-                                        @if(!empty($producto->descrip3))
-                                            <span class="producto-color-text">{{ $producto->descrip3 }}</span>
+                                        @if(!empty($producto->descrip2))
+                                            <span class="producto-color-text">{{ $producto->descrip2 }}</span>
                                         @endif
                                     </td>
 
