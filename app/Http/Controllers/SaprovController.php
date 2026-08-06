@@ -230,7 +230,7 @@ class SaprovController extends Controller
         // Obtener productos con sus datos básicos (incluyendo color)
         $query = Saprod::whereIn('codprod', $codigos_productos)
             ->where('comercial', $comercial)
-            ->select('codprod', 'descrip', 'marca', 'color', 'preciod', 'costod', 'costod2', 'costod3', 'existen', 'codinst');
+            ->select('codprod', 'descrip', 'marca', 'color', 'descrip3', 'preciod', 'costod', 'costod2', 'costod3', 'existen', 'codinst');
 
         // Aplicar filtro de productos con stock
         if ($filtro == 'con_stock') {
@@ -258,6 +258,7 @@ class SaprovController extends Controller
             $producto->codprod = $productoModel->codprod;
             $producto->descrip = $productoModel->descrip;
             $producto->color = $productoModel->color ?? '';
+            $producto->descrip3 = $productoModel->descrip3 ?? '';
             $producto->marca = $productoModel->marca;
             $producto->preciod = $productoModel->preciod;
             $producto->costod = $productoModel->costod;

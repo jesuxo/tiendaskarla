@@ -510,6 +510,9 @@
                                         @if(!empty($producto->color))
                                             <span class="producto-color-text">{{ $producto->color }}</span>
                                         @endif
+                                        @if(!empty($producto->descrip3))
+                                            <span class="producto-color-text">{{ $producto->descrip3 }}</span>
+                                        @endif
                                     </td>
 
                                     <!-- Stock Total -->
