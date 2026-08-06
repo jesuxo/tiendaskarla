@@ -328,7 +328,7 @@ class SaprovController extends Controller
                         $sucursalIds
                     );
 
-                    $producto->unidades_vendidas = $itemsVenta->where('signo', '>', 0)->sum('cantidad');
+                    $producto->unidades_vendidas = $itemsVenta->sum('cantidad');
                     $producto->total_ventas = $itemsVenta->sum(function ($item) {
                         return $item->costodoriginal * $item->cantidad * $item->signo;
                     });
@@ -367,7 +367,6 @@ class SaprovController extends Controller
                 $producto->unidades_vendidas = Saitemfac::where('CodItem', $producto->codprod)
                     ->whereRaw("fk_sucursal in ($sucursalIds)")
                     ->whereIn('TipoFac', ['A', 'B'])
-                    ->where('signo', '>', 0)
                     ->whereBetween('FechaE', [$fecha_desde, $fecha_hasta])
                     ->select(DB::raw('SUM(cantidad * signo) as total'))
                     ->value('total') ?? 0;
@@ -382,7 +381,7 @@ class SaprovController extends Controller
                 // Calcular última venta para días sin venta
                 $ultima_venta = Saitemfac::where('CodItem', $producto->codprod)
                     ->whereRaw("fk_sucursal in ($sucursalIds)")
-                    ->whereIn('TipoFac', ['A', 'B'])
+                    ->whereIn('TipoFac', ['A'])
                     ->where('signo', '>', 0)
                     ->orderBy('FechaE', 'desc')
                     ->first();
@@ -676,8 +675,8 @@ class SaprovController extends Controller
             : 0;
 
         // Compras y ventas últimos 30 días
-        $fecha_30dias = '2026-03-16';//now()->subDays(30)->format('Y-m-d');
-        $hoy = '2026-03-16';//now()->format('Y-m-d');
+        $fecha_30dias =  now()->subDays(30)->format('Y-m-d');
+        $hoy =  now()->format('Y-m-d');
 
         $compras_30dias = Saitemcom::where('codprov', $codprov)
             ->whereRaw("fk_sucursal in ($sucursalIds)")

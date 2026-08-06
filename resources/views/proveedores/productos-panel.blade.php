@@ -488,7 +488,7 @@
                                 </th>
                                 @foreach($sucursales as $sucursal)
                                     <th class="sucursal-header sortable" data-sort="sucursal_{{ $sucursal->id }}">
-                                        {{ str_replace("SARA", "", $sucursal->descrip) }}
+                                        {{ str_replace(" ", "", $sucursal->descrip) }}
                                         <i class="ri-arrow-up-down-line"></i>
                                     </th>
                                 @endforeach
