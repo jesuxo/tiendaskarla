@@ -559,7 +559,7 @@ class SaprovController extends Controller
             ->whereRaw("ifac.fk_sucursal in ($sucursalIds)")
             ->select(
                 'ifac.id',
-                'ifac.cantidad',
+                'ifac.cantidad*ifac.signo',
                 'ifac.costodoriginal',
                 'ifac.signo',
                 'ifac.FechaE'
@@ -784,7 +784,7 @@ class SaprovController extends Controller
             $producto->codprod = $productoModel->codprod;
             $producto->descrip = $productoModel->descrip;
             $producto->preciod = $productoModel->preciod;
-            $producto->costod = $productoModel->costod;
+            $producto->costod  = $productoModel->costod;
             $producto->existen = $productoModel->existen;
             $producto->codinst = $productoModel->codinst;
 
@@ -804,9 +804,9 @@ class SaprovController extends Controller
                         $sucursalIds
                     );
 
-                    $producto->unidades_vendidas = $itemsVenta->where('signo', '>', 0)->sum('cantidad');
+                    $producto->unidades_vendidas = $itemsVenta->sum('cantidad');
                     $producto->monto_ventas = $itemsVenta->sum(function ($item) {
-                        return $item->costodoriginal * $item->cantidad;
+                        return $item->costodoriginal * $item->cantidad  ;
                     });
                 } else {
                     $producto->unidades_vendidas = 0;
@@ -817,7 +817,6 @@ class SaprovController extends Controller
                 $producto->unidades_vendidas = Saitemfac::where('CodItem', $producto->codprod)
                     ->whereRaw("fk_sucursal in ($sucursalIds)")
                     ->whereIn('TipoFac', ['A', 'B'])
-                    ->where('signo', '>', 0)
                     ->whereBetween('FechaE', [$fecha_desde, $fecha_hasta])
                     ->select(DB::raw('SUM(  cantidad * signo) as cantidad') )
                     ->value('cantidad') ?? 0;
