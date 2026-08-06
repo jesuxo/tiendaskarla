@@ -557,12 +557,12 @@ class SaprovController extends Controller
             ->whereIn('ifac.TipoFac', ['A', 'B'])
             ->whereBetween('ifac.FechaE', [$fecha_desde, $fecha_hasta])
             ->whereRaw("ifac.fk_sucursal in ($sucursalIds)")
-            ->select(
-                'ifac.id',
-                'ifac.cantidad*ifac.signo',
-                'ifac.costodoriginal',
-                'ifac.signo',
-                'ifac.FechaE'
+            ->selectRaw(
+                "ifac.id,
+                ifac.cantidad*ifac.signo as cantidad,
+                ifac.costodoriginal,
+                ifac.signo,
+                ifac.FechaE"
             )
             ->get();
 
