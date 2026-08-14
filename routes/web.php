@@ -8,6 +8,7 @@ use App\Http\Controllers\UserSucursalController;
 use App\Http\Controllers\SacompController;
 use App\Http\Controllers\SainstaController;
 use App\Http\Controllers\SaprovController;
+use App\Http\Controllers\SaprodImagenController;
 use App\Http\Controllers\SaacxcController;
 use App\Http\Controllers\ProductoGrupoDescuentoController;
 use Illuminate\Support\Facades\Route;
@@ -244,6 +245,19 @@ Route::middleware(['check.admin'])->group(function () {
         Route::post('/cxcabonarweb', 'cxcabonarweb');
         Route::post('/cxc/clientes-por-sucursal', 'clientesPorSucursal');
         Route::post('/cxcdescuento',  'aplicarDescuento')->name('cxcdescuento');
+    });
+
+    Route::prefix('productos-imagenes')->name('productos.imagenes.')->group(function () {
+        Route::get('/{codprod}', [SaprodImagenController::class, 'getImagenes'])->name('get');
+        Route::get('/{codprod}/principal', [SaprodImagenController::class, 'getImagenPrincipal'])->name('get-principal');
+        Route::post('/upload', [SaprodImagenController::class, 'upload'])->name('upload');
+        Route::post('/upload-multiple', [SaprodImagenController::class, 'uploadMultiple'])->name('upload-multiple');
+        Route::delete('/{id}', [SaprodImagenController::class, 'destroy'])->name('destroy');
+        Route::post('/{id}/set-principal', [SaprodImagenController::class, 'setPrincipal'])->name('set-principal');
+        Route::post('/{id}/set-thumbnail', [SaprodImagenController::class, 'setThumbnail'])->name('set-thumbnail');
+        Route::post('/{id}/set-icono', [SaprodImagenController::class, 'setIcono'])->name('set-icono');
+        Route::put('/{id}/tipo', [SaprodImagenController::class, 'updateTipo'])->name('update-tipo'); // Ruta para cambiar tipo
+        Route::post('/update-order', [SaprodImagenController::class, 'updateOrder'])->name('update-order');
     });
 
     Route::resource('instpago', \App\Http\Controllers\SatarjController::class);

@@ -62,6 +62,76 @@
             font-size: 11px;
             color: #6c757d;
         }
+
+        /* Estilos para la galería de imágenes */
+        .dropzone-wrapper {
+            border: 2px dashed #dee2e6;
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background-color: #f8f9fa;
+        }
+
+        .dropzone-wrapper:hover {
+            border-color: #0d6efd;
+            background-color: #e9ecef;
+        }
+
+        .dropzone-wrapper.dragover {
+            border-color: #0d6efd;
+            background-color: #e7f1ff;
+        }
+
+        .galeria-imagen .imagen-card {
+            position: relative;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .galeria-imagen .imagen-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        .galeria-imagen .imagen-card img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+        }
+
+        .galeria-imagen .imagen-card .badge-tipo {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            font-size: 10px;
+        }
+
+        .galeria-imagen .imagen-card .acciones {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(0,0,0,0.7);
+            padding: 8px;
+            display: flex;
+            justify-content: center;
+            gap: 5px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .galeria-imagen .imagen-card:hover .acciones {
+            opacity: 1;
+        }
+
+        .galeria-imagen .imagen-card .acciones .btn {
+            padding: 2px 8px;
+            font-size: 12px;
+        }
     </style>
 @endsection
 
@@ -235,6 +305,58 @@
                 <!-- FIN SECCIÓN GRUPOS DE DESCUENTO -->
                 <!-- ============================================ -->
 
+                <!-- ============================================ -->
+                <!-- SECCIÓN: IMÁGENES DEL PRODUCTO                -->
+                <!-- ============================================ -->
+                <div class="card mt-3">
+                    <div class="card-header">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div class="d-flex align-items-center">
+                                <div class="flex-shrink-0 me-3">
+                                    <div class="avatar-sm">
+                                        <div class="avatar-title rounded-circle bg-info text-white fs-20">
+                                            <i class="bi bi-images"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                                <h5 class="card-title mb-0">Imágenes del Producto</h5>
+                            </div>
+                            <button type="button" class="btn btn-primary btn-sm" id="btnAgregarImagenes">
+                                <i class="bi bi-plus-circle"></i> Agregar Imágenes
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <!-- Drop zone para subir imágenes -->
+                        <div class="dropzone-wrapper mb-3" id="dropzoneWrapper">
+                            <div class="dropzone-area" id="dropzoneArea">
+                                <div class="text-center">
+                                    <i class="bi bi-cloud-upload" style="font-size: 48px;"></i>
+                                    <h5>Arrastra y suelta imágenes aquí</h5>
+                                    <p class="text-muted">o haz clic para seleccionar archivos</p>
+                                    <p class="text-muted small">Formatos: JPG, PNG, GIF, WebP (max 5MB)</p>
+                                    <input type="file" id="fileInput" multiple accept="image/*" style="display: none;">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Galería de imágenes -->
+                        <div id="galeriaImagenes" class="row g-3">
+                            <!-- Aquí se cargarán las imágenes vía JavaScript -->
+                        </div>
+
+                        <!-- Barra de progreso -->
+                        <div id="progressBar" style="display: none;" class="mt-3">
+                            <div class="progress">
+                                <div id="progressBarInner" class="progress-bar progress-bar-striped progress-bar-animated"
+                                     role="progressbar" style="width: 0%">0%</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- FIN SECCIÓN IMÁGENES -->
+                <!-- ============================================ -->
+
                 <div class="text-end mb-3">
                     <button type="submit" class="btn btn-success w-sm">Modificar</button>
                 </div>
@@ -328,6 +450,9 @@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
     <script>
+        // ============================================
+        // CÓDIGO EXISTENTE: GRUPOS DE DESCUENTO
+        // ============================================
         let gruposData = [];
         let asignacionesData = {};
         let productoActual = {
@@ -341,8 +466,10 @@
 
         $(document).ready(function() {
             cargarDatosIniciales();
+            cargarImagenes(); // Cargar imágenes al inicio
         });
 
+        // Funciones de grupos de descuento (existentes)
         function cargarDatosIniciales() {
             $('#grupos-descuento-container').html(`
             <div class="loading-grupos">
@@ -353,7 +480,6 @@
             </div>
         `);
 
-            // 1. Obtener todos los grupos
             $.ajax({
                 url: '{{ route("productos-grupos.grupos") }}',
                 type: 'GET',
@@ -378,7 +504,6 @@
         function cargarAsignacionesProducto() {
             const codprod = productoActual.codprod;
 
-            // Usar URL directa en lugar de route() para evitar problemas con parámetros
             $.ajax({
                 url: '/productos-grupos/asignaciones-producto/' + codprod,
                 type: 'GET',
@@ -487,7 +612,6 @@
 
             html += '</div>';
 
-            // Mostrar resumen
             const totalGrupos = gruposData.length;
             html = `
             <div class="alert alert-info alert-dismissible fade show mb-3" role="alert">
@@ -751,6 +875,525 @@
             }
         });
 
+        // ============================================
+        // NUEVO CÓDIGO: IMÁGENES DEL PRODUCTO
+        // ============================================
+
+        // Variables para el manejo de imágenes
+        let cargandoImagenes = false;
+
+        // Configuración inicial para imágenes
+        $(document).ready(function() {
+            const dropzoneArea = $('#dropzoneArea');
+            const fileInput = $('#fileInput');
+            const galeria = $('#galeriaImagenes');
+            const progressBar = $('#progressBar');
+            const progressBarInner = $('#progressBarInner');
+
+            // Eventos de dropzone
+            dropzoneArea.on('click', function(e) {
+                if (!$(e.target).closest('#fileInput').length) {
+                    fileInput.click();
+                }
+            });
+
+            dropzoneArea.on('dragover', function(e) {
+                e.preventDefault();
+                $(this).addClass('dragover');
+            });
+
+            dropzoneArea.on('dragleave', function(e) {
+                e.preventDefault();
+                $(this).removeClass('dragover');
+            });
+
+            dropzoneArea.on('drop', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                $(this).removeClass('dragover');
+                const files = e.originalEvent.dataTransfer.files;
+                if (files.length > 0) {
+                    subirImagenes(files);
+                }
+            });
+
+            // Manejar el cambio del input file
+            fileInput.on('change', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+
+                if (this.files && this.files.length > 0) {
+                    const files = this.files;
+                    const inputElement = this;
+                    setTimeout(function() {
+                        inputElement.value = '';
+                    }, 10);
+                    subirImagenes(files);
+                }
+            });
+
+            $('#btnAgregarImagenes').on('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                fileInput.click();
+            });
+
+            // ============================================
+            // EVENT DELEGATION - Para botones de imágenes
+            // ============================================
+
+            // Evento para establecer como principal
+            $(document).on('click', '.set-principal', function(e) {
+                e.preventDefault();
+                const id = $(this).data('id');
+                if (id) {
+                    setPrincipal(id);
+                }
+            });
+
+            // Evento para establecer como thumbnail
+            $(document).on('click', '.set-thumbnail', function(e) {
+                e.preventDefault();
+                const id = $(this).data('id');
+                if (id) {
+                    setThumbnail(id);
+                }
+            });
+
+            // Evento para establecer como icono
+            $(document).on('click', '.set-icono', function(e) {
+                e.preventDefault();
+                const id = $(this).data('id');
+                if (id) {
+                    setIcono(id);
+                }
+            });
+
+            // Evento para eliminar imagen
+            $(document).on('click', '.eliminar-imagen', function(e) {
+                e.preventDefault();
+                const id = $(this).data('id');
+                if (id) {
+                    Swal.fire({
+                        title: '¿Estás seguro?',
+                        text: "Esta acción no se puede deshacer",
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonColor: '#d33',
+                        cancelButtonColor: '#3085d6',
+                        confirmButtonText: 'Sí, eliminar',
+                        cancelButtonText: 'Cancelar'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            eliminarImagen(id);
+                        }
+                    });
+                }
+            });
+        });
+
+        // ============================================
+        // FUNCIONES PARA IMÁGENES
+        // ============================================
+
+        function cargarImagenes() {
+            const codprod = $('#codprod').val();
+            const urlBase = '/productos-imagenes';
+
+            if (cargandoImagenes) {
+                return;
+            }
+            cargandoImagenes = true;
+
+            $.ajax({
+                url: urlBase + '/' + codprod,
+                type: 'GET',
+                headers: {
+                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                },
+                success: function(response) {
+                    if (response.success) {
+                        renderizarGaleria(response);
+                    }
+                    cargandoImagenes = false;
+                },
+                error: function(xhr) {
+                    console.error('Error al cargar imágenes:', xhr);
+                    mostrarError('Error al cargar las imágenes');
+                    cargandoImagenes = false;
+                }
+            });
+        }
+
+        function renderizarGaleria(data) {
+            const galeria = $('#galeriaImagenes');
+            const galeriaElement = galeria[0];
+
+            if (galeriaElement) {
+                galeriaElement.innerHTML = '';
+            }
+
+            if (!data.imagenes || data.imagenes.length === 0) {
+                galeria.html(`
+                    <div class="col-12 text-center text-muted py-4">
+                        <i class="bi bi-image" style="font-size: 48px;"></i>
+                        <p>No hay imágenes para este producto</p>
+                    </div>
+                `);
+                return;
+            }
+
+            let html = '';
+            data.imagenes.forEach(function(imagen) {
+                const esPrincipal = imagen.tipo === 'principal' && imagen.activo === 1;
+                const esThumbnail = imagen.tipo === 'thumbnail' && imagen.activo === 1;
+                const esIcono = imagen.tipo === 'icono' && imagen.activo === 1;
+
+                let badges = '';
+                if (esPrincipal) badges += '<span class="badge bg-success me-1">Principal</span>';
+                if (esThumbnail) badges += '<span class="badge bg-info me-1">Thumbnail</span>';
+                if (esIcono) badges += '<span class="badge bg-warning me-1">Icono</span>';
+                if (!esPrincipal && !esThumbnail && !esIcono && imagen.tipo === 'secundaria') {
+                    badges += '<span class="badge bg-secondary me-1">Secundaria</span>';
+                }
+
+                let botones = '';
+
+                if (!esPrincipal) {
+                    botones += `<button class="btn btn-sm btn-success set-principal" data-id="${imagen.id}" title="Establecer como principal">
+                        <i class="bi bi-star"></i>
+                    </button>`;
+                } else {
+                    botones += `<button class="btn btn-sm btn-outline-success" disabled title="Ya es principal">
+                        <i class="bi bi-star-fill"></i>
+                    </button>`;
+                }
+
+                if (!esPrincipal && !esThumbnail) {
+                    botones += `<button class="btn btn-sm btn-info set-thumbnail" data-id="${imagen.id}" title="Establecer como thumbnail">
+                        <i class="bi bi-image"></i>
+                    </button>`;
+                } else if (esThumbnail) {
+                    botones += `<button class="btn btn-sm btn-outline-info" disabled title="Ya es thumbnail">
+                        <i class="bi bi-image-fill"></i>
+                    </button>`;
+                }
+
+                if (!esPrincipal && !esIcono) {
+                    botones += `<button class="btn btn-sm btn-warning set-icono" data-id="${imagen.id}" title="Establecer como icono">
+                        <i class="bi bi-square"></i>
+                    </button>`;
+                } else if (esIcono) {
+                    botones += `<button class="btn btn-sm btn-outline-warning" disabled title="Ya es icono">
+                        <i class="bi bi-square-fill"></i>
+                    </button>`;
+                }
+
+                botones += `<button class="btn btn-sm btn-danger eliminar-imagen" data-id="${imagen.id}" title="Eliminar">
+                    <i class="bi bi-trash"></i>
+                </button>`;
+
+                html += `
+                    <div class="col-md-3 col-sm-4 col-6 galeria-imagen">
+                        <div class="imagen-card">
+                            <img src="/${imagen.ruta}" alt="${imagen.nombre_original}" loading="lazy"
+                                 onerror="this.src='{{ asset('images/no-image.png') }}'">
+                            ${badges ? `<div class="badge-tipo">${badges}</div>` : ''}
+                            <div class="acciones">
+                                ${botones}
+                            </div>
+                            ${imagen.orden !== undefined ? `<small class="text-muted d-block text-center">Orden: ${imagen.orden}</small>` : ''}
+                        </div>
+                    </div>
+                `;
+            });
+
+            galeria.html(html);
+
+            // Actualizar el contador de imágenes
+            const totalActivas = data.imagenes.filter(img => img.activo === 1).length;
+            $('.card-header .card-title').each(function() {
+                const text = $(this).text();
+                if (text.includes('Imágenes del Producto')) {
+                    $(this).text(`Imágenes del Producto (${totalActivas})`);
+                }
+            });
+        }
+
+        function subirImagenes(files) {
+            const codprod = $('#codprod').val();
+            const urlBase = '/productos-imagenes';
+
+            if (files.length > 10) {
+                mostrarError('Solo puedes subir máximo 10 imágenes a la vez');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('codprod', codprod);
+
+            let archivosValidos = 0;
+            $.each(files, function(index, file) {
+                if (file.size > 5 * 1024 * 1024) {
+                    mostrarError(`El archivo ${file.name} excede el tamaño máximo de 5MB`);
+                    return;
+                }
+                formData.append('imagenes[]', file);
+                archivosValidos++;
+            });
+
+            if (archivosValidos === 0) {
+                return;
+            }
+
+            $('#progressBar').show();
+            $('#progressBarInner').css('width', '0%');
+            $('#progressBarInner').text('0%');
+
+            $.ajax({
+                url: urlBase + '/upload-multiple',
+                type: 'POST',
+                data: formData,
+                processData: false,
+                headers: {
+                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                },
+                contentType: false,
+                xhr: function() {
+                    const xhr = new XMLHttpRequest();
+                    xhr.upload.addEventListener('progress', function(e) {
+                        if (e.lengthComputable) {
+                            const percent = Math.round((e.loaded / e.total) * 100);
+                            $('#progressBarInner').css('width', percent + '%');
+                            $('#progressBarInner').text(percent + '%');
+                        }
+                    });
+                    return xhr;
+                },
+                success: function(response) {
+                    if (response.success) {
+                        $('#progressBarInner').css('width', '100%');
+                        $('#progressBarInner').text('100%');
+                        setTimeout(() => {
+                            $('#progressBar').hide();
+                            $('#progressBarInner').css('width', '0%');
+                        }, 1500);
+
+                        Swal.fire({
+                            icon: 'success',
+                            title: '¡Éxito!',
+                            text: response.message,
+                            timer: 2000,
+                            showConfirmButton: false
+                        });
+
+                        cargarImagenes();
+                    } else {
+                        $('#progressBar').hide();
+                        if (response.errores && response.errores.length > 0) {
+                            mostrarError('Errores: ' + response.errores.join(', '));
+                        } else {
+                            mostrarError('Error al subir las imágenes');
+                        }
+                    }
+                },
+                error: function(xhr) {
+                    $('#progressBar').hide();
+                    let mensaje = 'Error al subir las imágenes';
+                    if (xhr.responseJSON && xhr.responseJSON.errors) {
+                        const errores = Object.values(xhr.responseJSON.errors).flat();
+                        mensaje = errores.join(', ');
+                    }
+                    mostrarError(mensaje);
+                }
+            });
+        }
+
+        function setPrincipal(id) {
+            const urlBase = '/productos-imagenes';
+
+            Swal.fire({
+                title: 'Actualizando...',
+                text: 'Estableciendo imagen como principal',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+
+            $.ajax({
+                url: urlBase + '/' + id + '/set-principal',
+                type: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                },
+                success: function(response) {
+                    Swal.close();
+                    if (response.success) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: '¡Éxito!',
+                            text: response.message,
+                            timer: 1500,
+                            showConfirmButton: false
+                        });
+                        cargarImagenes();
+                    }
+                },
+                error: function(xhr) {
+                    Swal.close();
+                    console.error('Error:', xhr);
+                    let mensaje = 'Error al establecer como principal';
+                    if (xhr.responseJSON && xhr.responseJSON.error) {
+                        mensaje = xhr.responseJSON.error;
+                    }
+                    mostrarError(mensaje);
+                }
+            });
+        }
+
+        function setThumbnail(id) {
+            const urlBase = '/productos-imagenes';
+
+            Swal.fire({
+                title: 'Actualizando...',
+                text: 'Estableciendo imagen como thumbnail',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+
+            $.ajax({
+                url: urlBase + '/' + id + '/set-thumbnail',
+                type: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                },
+                success: function(response) {
+                    Swal.close();
+                    if (response.success) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: '¡Éxito!',
+                            text: response.message,
+                            timer: 1500,
+                            showConfirmButton: false
+                        });
+                        cargarImagenes();
+                    }
+                },
+                error: function(xhr) {
+                    Swal.close();
+                    console.error('Error:', xhr);
+                    let mensaje = 'Error al establecer como thumbnail';
+                    if (xhr.responseJSON && xhr.responseJSON.error) {
+                        mensaje = xhr.responseJSON.error;
+                    }
+                    mostrarError(mensaje);
+                }
+            });
+        }
+
+        function setIcono(id) {
+            const urlBase = '/productos-imagenes';
+
+            Swal.fire({
+                title: 'Actualizando...',
+                text: 'Estableciendo imagen como icono',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+
+            $.ajax({
+                url: urlBase + '/' + id + '/set-icono',
+                type: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                },
+                success: function(response) {
+                    Swal.close();
+                    if (response.success) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: '¡Éxito!',
+                            text: response.message,
+                            timer: 1500,
+                            showConfirmButton: false
+                        });
+                        cargarImagenes();
+                    }
+                },
+                error: function(xhr) {
+                    Swal.close();
+                    console.error('Error:', xhr);
+                    let mensaje = 'Error al establecer como icono';
+                    if (xhr.responseJSON && xhr.responseJSON.error) {
+                        mensaje = xhr.responseJSON.error;
+                    }
+                    mostrarError(mensaje);
+                }
+            });
+        }
+
+        function eliminarImagen(id) {
+            const urlBase = '/productos-imagenes';
+
+            Swal.fire({
+                title: 'Eliminando...',
+                text: 'Por favor espera',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+
+            $.ajax({
+                url: urlBase + '/' + id,
+                type: 'DELETE',
+                headers: {
+                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                },
+                success: function(response) {
+                    Swal.close();
+                    if (response.success) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Eliminado',
+                            text: response.message,
+                            timer: 1500,
+                            showConfirmButton: false
+                        });
+                        cargarImagenes();
+                    }
+                },
+                error: function(xhr) {
+                    Swal.close();
+                    console.error('Error:', xhr);
+                    let mensaje = 'Error al eliminar la imagen';
+                    if (xhr.responseJSON && xhr.responseJSON.error) {
+                        mensaje = xhr.responseJSON.error;
+                    }
+                    mostrarError(mensaje);
+                }
+            });
+        }
+
+        function mostrarError(mensaje) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: mensaje,
+                timer: 3000,
+                showConfirmButton: true
+            });
+        }
+
+        // ============================================
+        // CÓDIGO EXISTENTE: BÚSQUEDA DE MARCAS
+        // ============================================
 
         document.addEventListener('DOMContentLoaded', function() {
             const inputMarca = document.getElementById('marca');
@@ -761,14 +1404,12 @@
             let selectedIndex = -1;
             let isNavigating = false;
 
-            // Función para mostrar sugerencias
             function mostrarSugerencias(marcas, query) {
                 sugerenciasContainer.innerHTML = '';
                 selectedIndex = -1;
 
                 if (!marcas || marcas.length === 0) {
                     if (query && query.length > 0) {
-                        // Si no hay coincidencias, mostrar opción para crear nueva
                         const item = document.createElement('button');
                         item.type = 'button';
                         item.className = 'list-group-item list-group-item-action text-success';
@@ -785,7 +1426,6 @@
                     return;
                 }
 
-                // Mostrar marcas coincidentes
                 marcas.forEach(function(marca, index) {
                     const item = document.createElement('button');
                     item.type = 'button';
@@ -793,7 +1433,6 @@
                     item.textContent = marca;
                     item.dataset.index = index;
 
-                    // Resaltar coincidencia
                     if (query && query.length > 0) {
                         const regex = new RegExp(`(${query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
                         item.innerHTML = marca.replace(regex, '<strong style="color: #007bff;">$1</strong>');
@@ -829,7 +1468,6 @@
                         item.classList.add('active');
                         item.style.backgroundColor = '#e8f0fe';
                         item.style.borderColor = '#007bff';
-                        // Scroll al elemento seleccionado
                         item.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
                     } else {
                         item.classList.remove('active');
@@ -839,7 +1477,6 @@
                 });
             }
 
-            // Evento input - búsqueda en tiempo real
             inputMarca.addEventListener('input', function() {
                 const query = this.value.trim();
 
@@ -855,7 +1492,6 @@
                     return;
                 }
 
-                // Buscar en caché primero
                 const coincidencias = marcasCache.filter(function(marca) {
                     return marca.toLowerCase().includes(query.toLowerCase());
                 });
@@ -865,7 +1501,6 @@
                     return;
                 }
 
-                // Si no hay suficientes en caché, buscar en servidor
                 timeoutId = setTimeout(function() {
                     fetch(`{{ route('saprod.marcas') }}?q=${encodeURIComponent(query)}`)
                         .then(response => response.json())
@@ -879,7 +1514,6 @@
                 }, 300);
             });
 
-            // Evento keydown - navegación con teclado
             inputMarca.addEventListener('keydown', function(e) {
                 const items = sugerenciasContainer.querySelectorAll('.list-group-item-action');
 
@@ -900,7 +1534,6 @@
                         e.preventDefault();
                         const item = items[selectedIndex];
                         const texto = item.textContent.trim();
-                        // Limpiar si tiene el ícono de crear
                         const valor = texto.replace('✚ Crear', '').trim();
                         inputMarca.value = valor || texto;
                         ocultarSugerencias();
@@ -912,21 +1545,17 @@
                 }
             });
 
-            // Evento blur - ocultar sugerencias al salir del campo
             inputMarca.addEventListener('blur', function() {
                 setTimeout(function() {
                     ocultarSugerencias();
                 }, 200);
             });
 
-            // Evento focus - mostrar sugerencias al hacer focus
             inputMarca.addEventListener('focus', function() {
                 const query = this.value.trim();
                 if (query.length >= 2) {
-                    // Disparar búsqueda
                     this.dispatchEvent(new Event('input'));
                 } else {
-                    // Mostrar marcas populares si no hay texto
                     if (marcasCache.length === 0) {
                         fetch(`{{ route('saprod.marcas') }}?q=`)
                             .then(response => response.json())
@@ -942,7 +1571,6 @@
                 }
             });
 
-            // Cargar marcas al inicio para caché
             fetch(`{{ route('saprod.marcas') }}?q=`)
                 .then(response => response.json())
                 .then(data => {
@@ -952,15 +1580,5 @@
                     console.error('Error cargando marcas:', error);
                 });
         });
-
-        // Función global para crear nueva marca desde cualquier lugar (opcional)
-        function crearMarca(texto) {
-            const input = document.getElementById('marca');
-            if (input) {
-                input.value = texto;
-                document.getElementById('marca-sugerencias').style.display = 'none';
-                input.focus();
-            }
-        }
     </script>
 @endsection
