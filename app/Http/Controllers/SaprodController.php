@@ -1067,11 +1067,11 @@ class SaprodController extends Controller
             return $productoArray;
         });
 
-
+/*
         $productosConPrecio = $productosConPrecio->map(function($producto) {
             return $producto->toApiArray();
         });
-
+*/
 
         $servicios = Saserv::where('comercial',$comercial)
             ->whereRaw("codserv not in (select codserv from saservsucursal where fk_sucursal=$sucursalid )")
