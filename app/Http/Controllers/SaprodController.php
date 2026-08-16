@@ -919,6 +919,7 @@ class SaprodController extends Controller
         // Obtener los productos
         $productos = Saprod::where('comercial', $comercial)
             ->whereRaw($cadena)
+            ->with('imagenPrincipal')
             ->orderBy('updated_at', 'desc')
             ->limit(60)
             ->get();
@@ -1395,7 +1396,10 @@ class SaprodController extends Controller
 
     public function edit($id)
     {
-        $producto   = Saprod::find($id);
+        $producto = Saprod::with([
+            'imagenPrincipal',
+        ])->find($id);
+
         $comercial = session('comercialid') ;
         $instancias = Sainsta::selectRaw("concat( repeat('&nbsp;',((nivel-1)*4)), Descrip ) as label, descrip, id, nivel, codinst ")
             ->with(['padre'])

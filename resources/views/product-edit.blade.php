@@ -1,6 +1,6 @@
 @extends('layouts.master')
 @section('title')
-    Actualizaci&oacute;n de producto
+    Actualización de producto
 @endsection
 @section('css')
     <style>
@@ -132,6 +132,15 @@
             padding: 2px 8px;
             font-size: 12px;
         }
+
+        /* Animación para la imagen del header */
+        #imagenPrincipalPreview {
+            transition: all 0.3s ease;
+        }
+        #imagenPrincipalPreview:hover {
+            transform: scale(1.1);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
     </style>
 @endsection
 
@@ -143,20 +152,54 @@
         @csrf
         <div class="row">
             <div class="col-xl-9 col-lg-8">
-                <!-- Información del producto (existente) -->
+                <!-- ============================================ -->
+                <!-- INFORMACIÓN DEL PRODUCTO                      -->
+                <!-- ============================================ -->
                 <div class="card">
                     <div class="card-header">
-                        <div class="d-flex">
+                        <div class="d-flex align-items-center">
+
+
+                            <!-- Imagen del producto con tooltip -->
                             <div class="flex-shrink-0 me-3">
-                                <div class="avatar-sm">
-                                    <div class="avatar-title rounded-circle bg-light text-primary fs-20">
-                                        <i class="bi bi-box-seam"></i>
-                                    </div>
-                                </div>
+                                @php
+                                    $imagenUrl = null;
+                                    if($producto->imagenPrincipal) {
+                                        $imagenUrl = asset($producto->imagenPrincipal->ruta);
+                                    } else {
+                                        $imagenUrl = asset('build/images/noimagen.jpg');
+                                    }
+                                @endphp
+                                <img src="{{ $imagenUrl }}"
+                                     alt="{{ $producto->descrip }}"
+                                     style="width: 60px; height: 60px; object-fit: cover; border-radius: 8px; border: 2px solid #e9ecef; cursor: pointer;"
+
+                                     id="imagenPrincipalPreview">
                             </div>
+
+                            <!-- Título y descripción -->
                             <div class="flex-grow-1">
-                                <h5 class="card-title mb-1">Informaci&oacute;n</h5>
-                                <p class="text-muted mb-0">Ingrese/Modifique los datos del producto.</p>
+                                <h5 class="card-title mb-1">
+                                    Información
+                                    @if($producto->imagenPrincipal)
+                                        <span class="badge bg-success ms-2">
+                                            <i class="bi bi-image"></i> Con imagen
+                                        </span>
+                                    @else
+                                        <span class="badge bg-warning ms-2">
+                                            <i class="bi bi-exclamation-triangle"></i> Sin imagen
+                                        </span>
+                                    @endif
+                                </h5>
+                                <p class="text-muted mb-0">
+                                    <strong>Código:</strong> {{ $producto->codprod }}
+                                    @if($producto->marca)
+                                        | <strong>Marca:</strong> {{ $producto->marca }}
+                                    @endif
+                                    @if($producto->color)
+                                        | <span class="badge bg-secondary">{{ $producto->color }}</span>
+                                    @endif
+                                </p>
                             </div>
                         </div>
                     </div>
@@ -182,20 +225,22 @@
                     </div>
                 </div>
 
-                <!-- Datos del producto (existente) -->
+                <!-- ============================================ -->
+                <!-- DATOS DEL PRODUCTO                            -->
+                <!-- ============================================ -->
                 <div class="card">
                     <div class="card-body">
                         <div class="row">
                             <div class="col-lg-6">
                                 <div class="mb-3">
-                                    <label class="form-label" id="invalidcodprod" for="codprod">C&oacute;digo</label>
+                                    <label class="form-label" id="invalidcodprod" for="codprod">Código</label>
                                     <input type="text" class="form-control" id="codprod" name="codprod" disabled value="{{$producto->codprod}}" placeholder="">
                                 </div>
                             </div>
                             <div class="col-lg-6">
                                 <div class="mb-3">
                                     <label class="form-label" for="refere">Referencia</label>
-                                    <input type="text" class="form-control" id="refere" name="refere" value="{{$producto->refere}}" placeholder="Ej: C&oacute;digo Barra">
+                                    <input type="text" class="form-control" id="refere" name="refere" value="{{$producto->refere}}" placeholder="Ej: Código Barra">
                                 </div>
                             </div>
                         </div>
@@ -204,13 +249,13 @@
                             <input type="hidden" class="form-control" id="formAction" name="formAction" value="edit">
                             <input type="hidden" class="form-control" id="isadmin" name="isadmin" value="{{(Auth::user() and auth()->user()->type == 'admin')? 1: 0}}">
                             <input type="text" class="form-control" id="descrip" value="{{$producto->descrip}}" placeholder="Descripcion principal" name="descrip" required>
-                            <div class="invalid-feedback">Por favor, ingrese el nombre/descripci&oacute;n del producto</div>
+                            <div class="invalid-feedback">Por favor, ingrese el nombre/descripción del producto</div>
                         </div>
                         <div class="mb-3">
-                            <input type="text" class="form-control" id="descrip2" name="descrip2" value="{{$producto->descrip2}}" placeholder="Descripci&oacute;n 2">
+                            <input type="text" class="form-control" id="descrip2" name="descrip2" value="{{$producto->descrip2}}" placeholder="Descripción 2">
                         </div>
                         <div class="mb-3">
-                            <input type="text" class="form-control" id="descrip3" name="descrip3" value="{{$producto->descrip3}}" placeholder="Descripci&oacute;n 3">
+                            <input type="text" class="form-control" id="descrip3" name="descrip3" value="{{$producto->descrip3}}" placeholder="Descripción 3">
                         </div>
                         <div class="row">
                             <div class="col-lg-6">
@@ -303,7 +348,6 @@
                     </div>
                 </div>
                 <!-- FIN SECCIÓN GRUPOS DE DESCUENTO -->
-                <!-- ============================================ -->
 
                 <!-- ============================================ -->
                 <!-- SECCIÓN: IMÁGENES DEL PRODUCTO                -->
@@ -355,7 +399,6 @@
                     </div>
                 </div>
                 <!-- FIN SECCIÓN IMÁGENES -->
-                <!-- ============================================ -->
 
                 <div class="text-end mb-3">
                     <button type="submit" class="btn btn-success w-sm">Modificar</button>
@@ -363,11 +406,13 @@
             </div>
             <!-- end col -->
 
-            <!-- Columna derecha (existente) -->
+            <!-- ============================================ -->
+            <!-- COLUMNA DERECHA                               -->
+            <!-- ============================================ -->
             <div class="col-xl-3 col-lg-4">
                 <div class="card">
                     <div class="card-header">
-                        <h5 class="card-title mb-0">Condici&oacute;n</h5>
+                        <h5 class="card-title mb-0">Condición</h5>
                     </div>
                     <div class="card-body">
                         <select class="form-select" id="choices-publish-visibility-input" data-choices data-choices-search-false name="activo">
@@ -380,7 +425,7 @@
                 @if(Auth::user() and auth()->user()->type == 'admin')
                     <div class="card">
                         <div class="card-header">
-                            <h5 class="card-title mb-3">Informaci&oacute;n adicional</h5>
+                            <h5 class="card-title mb-3">Información adicional</h5>
                         </div>
                         <div class="card-body">
                             <label class="form-label" for="preciod">Costo</label>
@@ -451,7 +496,7 @@
 
     <script>
         // ============================================
-        // CÓDIGO EXISTENTE: GRUPOS DE DESCUENTO
+        // GRUPOS DE DESCUENTO
         // ============================================
         let gruposData = [];
         let asignacionesData = {};
@@ -464,21 +509,82 @@
         let grupoSeleccionadoData = null;
         let tasaActual = 3600;
 
+        // ============================================
+        // IMÁGENES
+        // ============================================
+        let cargandoImagenes = false;
+
         $(document).ready(function() {
             cargarDatosIniciales();
-            cargarImagenes(); // Cargar imágenes al inicio
+            cargarImagenes();
+            inicializarTooltips();
         });
 
-        // Funciones de grupos de descuento (existentes)
+        // ============================================
+        // FUNCIONES PARA TOOLTIPS
+        // ============================================
+        function inicializarTooltips() {
+            var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+            var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+                return new bootstrap.Tooltip(tooltipTriggerEl, {
+                    html: true,
+                    placement: 'right'
+                });
+            });
+        }
+
+        // ============================================
+        // FUNCIONES PARA ACTUALIZAR IMAGEN DEL HEADER
+        // ============================================
+        function actualizarImagenHeader(url) {
+            const imgPreview = document.getElementById('imagenPrincipalPreview');
+            if (imgPreview) {
+                imgPreview.src = url;
+
+                // Actualizar el tooltip
+                if (imgPreview.getAttribute('data-bs-toggle') === 'tooltip') {
+                    const tooltip = bootstrap.Tooltip.getInstance(imgPreview);
+                    if (tooltip) {
+                        tooltip.dispose();
+                    }
+                    imgPreview.setAttribute('title', `<img src='${url}' style='width: 250px; height: 250px; object-fit: cover; border-radius: 8px;'>`);
+                    new bootstrap.Tooltip(imgPreview, {
+                        html: true,
+                        placement: 'right'
+                    });
+                }
+            }
+
+            // Actualizar el badge
+            const cardTitle = document.querySelector('.card-header .card-title');
+            if (cardTitle) {
+                const hasImage = url.indexOf('noimagen.jpg') === -1;
+                const badgeHtml = hasImage
+                    ? '<span class="badge bg-success ms-2"><i class="bi bi-image"></i> Con imagen</span>'
+                    : '<span class="badge bg-warning ms-2"><i class="bi bi-exclamation-triangle"></i> Sin imagen</span>';
+
+                // Reemplazar el badge existente
+                const existingBadge = cardTitle.querySelector('.badge');
+                if (existingBadge) {
+                    existingBadge.outerHTML = badgeHtml;
+                } else {
+                    cardTitle.innerHTML += ' ' + badgeHtml;
+                }
+            }
+        }
+
+        // ============================================
+        // FUNCIONES DE GRUPOS DE DESCUENTO
+        // ============================================
         function cargarDatosIniciales() {
             $('#grupos-descuento-container').html(`
-            <div class="loading-grupos">
-                <div class="spinner-border spinner-sm text-success" role="status">
-                    <span class="visually-hidden">Cargando...</span>
+                <div class="loading-grupos">
+                    <div class="spinner-border spinner-sm text-success" role="status">
+                        <span class="visually-hidden">Cargando...</span>
+                    </div>
+                    <span class="ms-2">Cargando grupos de descuento...</span>
                 </div>
-                <span class="ms-2">Cargando grupos de descuento...</span>
-            </div>
-        `);
+            `);
 
             $.ajax({
                 url: '{{ route("productos-grupos.grupos") }}',
@@ -489,14 +595,14 @@
                 },
                 error: function() {
                     $('#grupos-descuento-container').html(`
-                    <div class="alert alert-danger">
-                        <i class="bi bi-exclamation-triangle"></i>
-                        Error al cargar los grupos de descuento.
-                        <button type="button" class="btn btn-sm btn-outline-danger ms-2" onclick="cargarDatosIniciales()">
-                            Reintentar
-                        </button>
-                    </div>
-                `);
+                        <div class="alert alert-danger">
+                            <i class="bi bi-exclamation-triangle"></i>
+                            Error al cargar los grupos de descuento.
+                            <button type="button" class="btn btn-sm btn-outline-danger ms-2" onclick="cargarDatosIniciales()">
+                                Reintentar
+                            </button>
+                        </div>
+                    `);
                 }
             });
         }
@@ -540,12 +646,12 @@
 
             if (!gruposData || gruposData.length === 0) {
                 container.html(`
-                <div class="text-center text-muted py-4">
-                    <i class="bi bi-tags fs-1 d-block"></i>
-                    <p class="mt-2">No hay grupos de descuento registrados</p>
-                    <small>Contacte al administrador para crear grupos</small>
-                </div>
-            `);
+                    <div class="text-center text-muted py-4">
+                        <i class="bi bi-tags fs-1 d-block"></i>
+                        <p class="mt-2">No hay grupos de descuento registrados</p>
+                        <small>Contacte al administrador para crear grupos</small>
+                    </div>
+                `);
                 return;
             }
 
@@ -566,61 +672,61 @@
                 let precioHTML = '';
                 if (estaAsignado && asignacion.precio) {
                     precioHTML = `
-                    <div class="mt-2">
-                        <span class="precio-asignado">
-                            <i class="bi bi-coin"></i> $${Number(asignacion.precio).toLocaleString()} COP
-                        </span>
-                        ${asignacion.tasa_cambio ? `<div class="tasa-asignacion">💱 Tasa: $${Number(asignacion.tasa_cambio).toLocaleString()}</div>` : ''}
-                        ${asignacion.fecha ? `<div class="fecha-asignacion">📅 ${new Date(asignacion.fecha).toLocaleDateString('es-CO')}</div>` : ''}
-                    </div>
-                `;
+                        <div class="mt-2">
+                            <span class="precio-asignado">
+                                <i class="bi bi-coin"></i> $${Number(asignacion.precio).toLocaleString()} COP
+                            </span>
+                            ${asignacion.tasa_cambio ? `<div class="tasa-asignacion">💱 Tasa: $${Number(asignacion.tasa_cambio).toLocaleString()}</div>` : ''}
+                            ${asignacion.fecha ? `<div class="fecha-asignacion">📅 ${new Date(asignacion.fecha).toLocaleDateString('es-CO')}</div>` : ''}
+                        </div>
+                    `;
                 }
 
                 const botonAccion = estaAsignado
                     ? `<button type="button" class="btn btn-sm btn-danger btn-asignar-grupo" onclick="quitarProductoGrupo(${grupo.id})">
-                    <i class="bi bi-x-circle"></i> Quitar
-                   </button>`
+                        <i class="bi bi-x-circle"></i> Quitar
+                    </button>`
                     : `<button type="button" class="btn btn-sm btn-success btn-asignar-grupo" onclick="asignarProductoGrupo(${grupo.id})">
-                    <i class="bi bi-plus-circle"></i> Asignar
-                   </button>`;
+                        <i class="bi bi-plus-circle"></i> Asignar
+                    </button>`;
 
                 const porcentajeHTML = grupo.porcentaje_descuento > 0
                     ? `<span class="badge bg-warning text-dark ms-2">${grupo.porcentaje_descuento}% OFF</span>`
                     : '';
 
                 html += `
-                <div class="col-md-6 col-lg-4 mb-3">
-                    <div class="grupo-descuento-card ${claseCard}">
-                        <div class="d-flex justify-content-between align-items-start">
-                            <div>
-                                <h6 class="mb-0">
-                                    🏷️ ${grupo.nombre}
-                                    ${porcentajeHTML}
-                                </h6>
-                                <small class="text-muted">ID: ${grupo.id}</small>
+                    <div class="col-md-6 col-lg-4 mb-3">
+                        <div class="grupo-descuento-card ${claseCard}">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <h6 class="mb-0">
+                                        🏷️ ${grupo.nombre}
+                                        ${porcentajeHTML}
+                                    </h6>
+                                    <small class="text-muted">ID: ${grupo.id}</small>
+                                </div>
+                                ${badgeStatus}
                             </div>
-                            ${badgeStatus}
-                        </div>
-                        ${precioHTML}
-                        <div class="mt-2 d-flex gap-2">
-                            ${botonAccion}
+                            ${precioHTML}
+                            <div class="mt-2 d-flex gap-2">
+                                ${botonAccion}
+                            </div>
                         </div>
                     </div>
-                </div>
-            `;
+                `;
             });
 
             html += '</div>';
 
             const totalGrupos = gruposData.length;
             html = `
-            <div class="alert alert-info alert-dismissible fade show mb-3" role="alert">
-                <i class="bi bi-info-circle"></i>
-                <strong>Resumen:</strong> ${asignadosCount} de ${totalGrupos} grupos asignados.
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-            </div>
-            ${html}
-        `;
+                <div class="alert alert-info alert-dismissible fade show mb-3" role="alert">
+                    <i class="bi bi-info-circle"></i>
+                    <strong>Resumen:</strong> ${asignadosCount} de ${totalGrupos} grupos asignados.
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+                ${html}
+            `;
 
             container.html(html);
         }
@@ -678,13 +784,13 @@
                 : '';
 
             $('#info-producto-grupo').html(`
-            <div class="alert alert-info">
-                <strong>📦 Producto:</strong> ${productoActual.nombre}<br>
-                <strong>💵 Precio USD:</strong> $${precioUsd.toFixed(2)}<br>
-                <strong>🔑 Código:</strong> ${productoActual.codprod}<br>
-                <strong>🏷️ Grupo:</strong> ${grupoSeleccionadoData.nombre} ${descuentoTexto}
-            </div>
-        `);
+                <div class="alert alert-info">
+                    <strong>📦 Producto:</strong> ${productoActual.nombre}<br>
+                    <strong>💵 Precio USD:</strong> $${precioUsd.toFixed(2)}<br>
+                    <strong>🔑 Código:</strong> ${productoActual.codprod}<br>
+                    <strong>🏷️ Grupo:</strong> ${grupoSeleccionadoData.nombre} ${descuentoTexto}
+                </div>
+            `);
 
             calcularPrecioGrupo();
             $('#modalPrecioGrupo').modal('show');
@@ -703,25 +809,25 @@
                 const descuento = precioBase * (porcentajeGrupo / 100);
                 precioFinal = precioBase - descuento;
                 calculoHtml = `
-                <div class="alert alert-secondary mb-0">
-                    <strong>📊 Cálculo con descuento:</strong><br>
-                    <small>
-                        ${precioUsd.toFixed(2)} USD × ${tasa.toLocaleString()} COP = ${Math.round(precioBase).toLocaleString()} COP<br>
-                        - ${porcentajeGrupo}% de descuento = -${Math.round(descuento).toLocaleString()} COP<br>
-                        <strong>= ${Math.round(precioFinal).toLocaleString()} COP</strong>
-                    </small>
-                </div>
-            `;
+                    <div class="alert alert-secondary mb-0">
+                        <strong>📊 Cálculo con descuento:</strong><br>
+                        <small>
+                            ${precioUsd.toFixed(2)} USD × ${tasa.toLocaleString()} COP = ${Math.round(precioBase).toLocaleString()} COP<br>
+                            - ${porcentajeGrupo}% de descuento = -${Math.round(descuento).toLocaleString()} COP<br>
+                            <strong>= ${Math.round(precioFinal).toLocaleString()} COP</strong>
+                        </small>
+                    </div>
+                `;
             } else {
                 calculoHtml = `
-                <div class="alert alert-secondary mb-0">
-                    <strong>📊 Cálculo automático:</strong><br>
-                    <small>
-                        ${precioUsd.toFixed(2)} USD × ${tasa.toLocaleString()} COP =
-                        <strong>${Math.round(precioFinal).toLocaleString()} COP</strong>
-                    </small>
-                </div>
-            `;
+                    <div class="alert alert-secondary mb-0">
+                        <strong>📊 Cálculo automático:</strong><br>
+                        <small>
+                            ${precioUsd.toFixed(2)} USD × ${tasa.toLocaleString()} COP =
+                            <strong>${Math.round(precioFinal).toLocaleString()} COP</strong>
+                        </small>
+                    </div>
+                `;
             }
 
             $('#calculo-precio-grupo').html(calculoHtml);
@@ -876,11 +982,8 @@
         });
 
         // ============================================
-        // NUEVO CÓDIGO: IMÁGENES DEL PRODUCTO
+        // FUNCIONES PARA IMÁGENES
         // ============================================
-
-        // Variables para el manejo de imágenes
-        let cargandoImagenes = false;
 
         // Configuración inicial para imágenes
         $(document).ready(function() {
@@ -938,11 +1041,7 @@
                 fileInput.click();
             });
 
-            // ============================================
-            // EVENT DELEGATION - Para botones de imágenes
-            // ============================================
-
-            // Evento para establecer como principal
+            // Event delegation para botones de imágenes
             $(document).on('click', '.set-principal', function(e) {
                 e.preventDefault();
                 const id = $(this).data('id');
@@ -951,7 +1050,6 @@
                 }
             });
 
-            // Evento para establecer como thumbnail
             $(document).on('click', '.set-thumbnail', function(e) {
                 e.preventDefault();
                 const id = $(this).data('id');
@@ -960,7 +1058,6 @@
                 }
             });
 
-            // Evento para establecer como icono
             $(document).on('click', '.set-icono', function(e) {
                 e.preventDefault();
                 const id = $(this).data('id');
@@ -969,7 +1066,6 @@
                 }
             });
 
-            // Evento para eliminar imagen
             $(document).on('click', '.eliminar-imagen', function(e) {
                 e.preventDefault();
                 const id = $(this).data('id');
@@ -992,10 +1088,6 @@
             });
         });
 
-        // ============================================
-        // FUNCIONES PARA IMÁGENES
-        // ============================================
-
         function cargarImagenes() {
             const codprod = $('#codprod').val();
             const urlBase = '/productos-imagenes';
@@ -1014,6 +1106,16 @@
                 success: function(response) {
                     if (response.success) {
                         renderizarGaleria(response);
+
+                        // Actualizar la imagen del header
+                        if (response.imagenes) {
+                            const principal = response.imagenes.find(img => img.tipo === 'principal' && img.activo === 1);
+                            if (principal) {
+                                actualizarImagenHeader('/' + principal.ruta);
+                            } else {
+                                actualizarImagenHeader('{{ asset('build/images/noimagen.jpg') }}');
+                            }
+                        }
                     }
                     cargandoImagenes = false;
                 },
@@ -1392,7 +1494,7 @@
         }
 
         // ============================================
-        // CÓDIGO EXISTENTE: BÚSQUEDA DE MARCAS
+        // BÚSQUEDA DE MARCAS
         // ============================================
 
         document.addEventListener('DOMContentLoaded', function() {

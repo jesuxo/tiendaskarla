@@ -66,16 +66,18 @@ class Saprod extends Model
 
     public function imagenPrincipal()
     {
+        $comercial = session('comercialid') ;
         return $this->hasOne(SaprodImagen::class, 'codprod', 'codprod')
-            ->where('comercial', $this->comercial)
+            ->where('comercial', $comercial)
             ->where('tipo', 'principal')
             ->where('activo', 1);
     }
 
     public function imagenesSecundarias()
     {
+        $comercial = session('comercialid') ;
         return $this->hasMany(SaprodImagen::class, 'codprod', 'codprod')
-            ->where('comercial', $this->comercial)
+            ->where('comercial', $comercial)
             ->where('tipo', 'secundaria')
             ->where('activo', 1)
             ->orderBy('orden', 'asc');
@@ -83,16 +85,18 @@ class Saprod extends Model
 
     public function thumbnail()
     {
+        $comercial = session('comercialid') ;
         return $this->hasOne(SaprodImagen::class, 'codprod', 'codprod')
-            ->where('comercial', $this->comercial)
+            ->where('comercial', $comercial)
             ->where('tipo', 'thumbnail')
             ->where('activo', 1);
     }
 
     public function icono()
     {
+        $comercial = session('comercialid') ;
         return $this->hasOne(SaprodImagen::class, 'codprod', 'codprod')
-            ->where('comercial', $this->comercial)
+            ->where('comercial',$comercial)
             ->where('tipo', 'icono')
             ->where('activo', 1);
     }
