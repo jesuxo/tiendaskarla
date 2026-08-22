@@ -10,6 +10,8 @@ use App\Http\Controllers\SainstaController;
 use App\Http\Controllers\SaprovController;
 use App\Http\Controllers\SaprodImagenController;
 use App\Http\Controllers\SaacxcController;
+use App\Http\Controllers\Seriales\VerificacionSerialController;
+use App\Http\Controllers\Seriales\SerialController;
 use App\Http\Controllers\ProductoGrupoDescuentoController;
 use Illuminate\Support\Facades\Route;
 
@@ -259,6 +261,25 @@ Route::middleware(['check.admin'])->group(function () {
         Route::put('/{id}/tipo', [SaprodImagenController::class, 'updateTipo'])->name('update-tipo'); // Ruta para cambiar tipo
         Route::post('/update-order', [SaprodImagenController::class, 'updateOrder'])->name('update-order');
     });
+
+    Route::prefix('seriales')->name('seriales.')->group(function () {
+
+        Route::get('/historial', [SerialController::class, 'historial'])->name('historial');
+
+        Route::post('/buscar-ajax', [SerialController::class, 'buscarSeriales'])->name('buscar.ajax');
+
+        Route::post('/historial-ajax', [SerialController::class, 'getHistorialAjax'])->name('historial.ajax');
+
+        // Rutas existentes
+        Route::get('/historial-json/{codprod}/{serial}', [SerialController::class, 'historialJson'])->name('historial.json');
+        Route::get('/buscar', [SerialController::class, 'buscar'])->name('buscar');
+        Route::get('/estadisticas-compra/{compraId}', [SerialController::class, 'estadisticasCompra'])->name('estadisticas-compra');
+        Route::get('/{id}/comentario', [VerificacionSerialController::class, 'getComentario'])->name('get-comentario');
+        Route::post('/{id}/verificar', [VerificacionSerialController::class, 'verificar'])->name('verificar');
+        Route::get('/estadisticas-compra/{compraId}', [VerificacionSerialController::class, 'estadisticasVerificacion'])->name('estadisticas-verificacion');
+    });
+
+    Route::get('/seriales/{id}/data', [VerificacionSerialController::class, 'getSerial']);
 
     Route::resource('instpago', \App\Http\Controllers\SatarjController::class);
     Route::controller(\App\Http\Controllers\SatarjController::class)->group(function () {
