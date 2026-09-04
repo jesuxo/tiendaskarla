@@ -34,6 +34,7 @@
                             <span class="badge bg-{{ $movimiento->badge_color }}">
                                 {{ $movimiento->tipo_movimiento }}
                             </span>
+                            <!-- { {($movimiento->tipo_descripcion=='Traslado')? ''}}-->
                         </div>
                         <div class="col-md-2">
                             <strong>Fecha:</strong> {{ $movimiento->fecha }}

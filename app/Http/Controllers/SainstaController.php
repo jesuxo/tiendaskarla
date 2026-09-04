@@ -41,10 +41,11 @@ class SainstaController extends Controller
         }
         return response()->json($instancias );
     }
-    public function lastprod($codinst)
+    public function lastprod(Request $request)
     {
         $last       = 0;
         $incrementa = 1;
+        $codinst    = $request->codinst;
         $comercial  = session('comercialid') ;
         $instancia  = Sainsta::where('codinst', $codinst)->first();
         $product    = Saprod::where(['comercial'=> $comercial, 'codinst' => $codinst])->orderBy('id', 'desc')->first();

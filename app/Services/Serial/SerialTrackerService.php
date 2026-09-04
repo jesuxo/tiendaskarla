@@ -274,8 +274,8 @@ class SerialTrackerService
     public function buscarSerial($texto)
     {
         $resultados = [
-            'compras' => [],
-            'ventas' => [],
+            'compras'     => [],
+            'ventas'      => [],
             'operaciones' => []
         ];
 
@@ -290,12 +290,12 @@ class SerialTrackerService
             ->get()
             ->map(function($item) {
                 return [
-                    'id' => $item->id,
-                    'serial' => $item->nroserial,
+                    'id'        => $item->id,
+                    'serial'    => $item->nroserial,
                     'documento' => $item->numerod,
-                    'tipo' => $item->tipocom,
-                    'producto' => $item->producto->descrip ?? 'N/A',
-                    'fecha' => $item->created_at->format('d/m/Y')
+                    'tipo'      => $item->tipocom,
+                    'producto'  => $item->producto->descrip ?? 'N/A',
+                    'fecha'     => $item->created_at->format('d/m/Y')
                 ];
             });
 
@@ -306,11 +306,11 @@ class SerialTrackerService
             ->get()
             ->map(function($item) {
                 return [
-                    'id' => $item->id,
-                    'serial' => $item->nroserial,
+                    'id'        => $item->id,
+                    'serial'    => $item->nroserial,
                     'documento' => $item->numerod,
-                    'tipo' => $item->tipofac,
-                    'fecha' => date('d/m/Y', strtotime($item->created_at))
+                    'tipo'      => $item->tipofac,
+                    'fecha'     => date('d/m/Y', strtotime($item->created_at))
                 ];
             });
 
@@ -321,11 +321,11 @@ class SerialTrackerService
             ->get()
             ->map(function($item) {
                 return [
-                    'id' => $item->id,
-                    'serial' => $item->NroSerial,
+                    'id'        => $item->id,
+                    'serial'    => $item->NroSerial,
                     'documento' => $item->NumeroD,
-                    'tipo' => $item->tipoopi,
-                    'fecha' => date('d/m/Y', strtotime($item->created_at))
+                    'tipo'      => $item->tipoopi,
+                    'fecha'     => date('d/m/Y', strtotime($item->created_at))
                 ];
             });
 

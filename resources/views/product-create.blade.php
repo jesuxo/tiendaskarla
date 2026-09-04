@@ -92,7 +92,8 @@
 
             $.ajax({
                 type: 'POST',
-                url: '/sainsta/check/lastprod/'+codinst,
+                url: '/sainsta/check/lastprod/codinst',
+                data: {codinst: codinst},
                 headers: {
                     'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
                 },

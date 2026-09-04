@@ -156,7 +156,7 @@ Route::middleware(['check.admin'])->group(function () {
     Route::resource('instancias', SainstaController::class);
     Route::controller(SainstaController::class)->group(function () {
         Route::get('sainsta/json', 'json')->name('sainsta.json');
-        Route::post('sainsta/check/lastprod/{codinst}', 'lastprod');
+        Route::post('sainsta/check/lastprod/codinst', 'lastprod')->name('sainsta.codinst');
     });
 
 
