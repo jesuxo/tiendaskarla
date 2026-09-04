@@ -48,6 +48,7 @@ class SainstaController extends Controller
         $codinst    = $request->codinst;
         $comercial  = session('comercialid') ;
         $instancia  = Sainsta::where('codinst', $codinst)->first();
+
         $product    = Saprod::where(['comercial'=> $comercial, 'codinst' => $codinst])->orderBy('id', 'desc')->first();
 
         list($padre, $codinsta) = explode('.', $instancia->codalte);
@@ -73,9 +74,6 @@ class SainstaController extends Controller
                 $flag = 0;
             }
         }
-
-
-
 
         return response()->json(['last' => $numprx ]);
     }
