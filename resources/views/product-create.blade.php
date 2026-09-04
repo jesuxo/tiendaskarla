@@ -93,11 +93,10 @@
             $.ajax({
                 type: 'POST',
                 url: '/sainsta/check/lastprod/codinst',
-                data: {codinst: codinst},
+                data: { codinst: codinst},
                 headers: {
                     'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
                 },
-                data:{ },
                 success: function (data) {
                     lastprod = data.last;
                     if(lastprod) {
