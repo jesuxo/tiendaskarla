@@ -11,7 +11,7 @@ class Saprod extends Model
 
     protected $table    = 'saprod';
     protected $fillable = ['codprod','descrip','descrip2','descrip3',
-        'marca','refere','codinst','observaciones','activo',
+        'marca','refere','codinst','observaciones','activo','color',
         'esexento','exdecimal','cantxempaq','volumen','peso','unidad',
         'preciod',  'preciod2','costod','costod2','costod3'];
 
