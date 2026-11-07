@@ -199,6 +199,9 @@ Route::middleware(['check.admin'])->group(function () {
     Route::match(['get','post'], 'proveedores/{codprov?}/{tab?}', [SaprovController::class, 'index'])
         ->name('proveedores.index');
 
+    Route::get('/productos/{codprod}/datos-edit', [SaprodController::class, 'getDatosEdit'])
+        ->name('productos.datos-edit');
+
     Route::resource('productos', \App\Http\Controllers\SaprodController::class);
     Route::controller(\App\Http\Controllers\SaprodController::class)->group(function () {
         Route::get('/saprod/marcas', [\App\Http\Controllers\SaprodController::class, 'getMarcas'])->name('saprod.marcas');
