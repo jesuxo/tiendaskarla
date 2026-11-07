@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Models\Cwcxcprv;
-use App\Models\Cwviajemoto;
 use App\Models\Sacomercial;
 use App\Models\Sainsta;
 use App\Models\Saprodsucursal;
@@ -1842,37 +1841,6 @@ class SaprovController extends Controller
             $proveedor = Saprov::where('codprov', $codprov)->first();
 
             if ($proveedor) {
-                // Cargar pagos pendientes de este proveedor (viajes donde paga)
-                $pagosPendientes = Cwviajemoto::with(['viaje', 'cliente'])
-                    ->where('proveedor_paga', true)
-                    ->where('proveedor_codprov', $proveedor->codprov)
-                    ->where('estado_conciliacion', 'pendiente')
-                    ->orderBy('created_at', 'desc')
-                    ->get();
-
-                // Cargar pagos realizados (conciliados)
-                $pagosRealizados = Cwviajemoto::with(['viaje', 'cliente'])
-                    ->where('proveedor_paga', true)
-                    ->where('proveedor_codprov', $proveedor->codprov)
-                    ->where('estado_conciliacion', 'conciliado')
-                    ->orderBy('fecha_conciliacion', 'desc')
-                    ->limit(20)
-                    ->get();
-
-                // Resumen de pagos por mes
-                $resumenPagos = Cwviajemoto::select(
-                    DB::raw('YEAR(created_at) as anio'),
-                    DB::raw('MONTH(created_at) as mes'),
-                    DB::raw('SUM(monto_esperado_cliente) as total_pendiente'),
-                    DB::raw('SUM(CASE WHEN estado_conciliacion = "conciliado" THEN monto_real_cliente ELSE 0 END) as total_pagado')
-                )
-                    ->where('proveedor_paga', true)
-                    ->where('proveedor_codprov', $proveedor->codprov)
-                    ->groupBy('anio', 'mes')
-                    ->orderBy('anio', 'desc')
-                    ->orderBy('mes', 'desc')
-                    ->limit(6)
-                    ->get();
 
                 // === NUEVO: Cargar datos para el tab de análisis ===
                 $fecha_30dias = now()->subDays(30)->format('Y-m-d');
@@ -1900,8 +1868,6 @@ class SaprovController extends Controller
                 $totales_compras = ['unidades' => 0, 'monto' => 0];
             }
         }
-
-
 
         return view('proveedores.index', compact(
             'proveedores',
