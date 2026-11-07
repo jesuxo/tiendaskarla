@@ -278,12 +278,10 @@ class SaprovController extends Controller
      */
     public function quickUpdateProducto(Request $request)
     {
-        $comercial = session('comercialid');
-        $comercialModel = Sacomercial::find($comercial);
+        $comercialid = session('comercialid');
+        $comercialModel = Sacomercial::find($comercialid);
 
         if (!$comercialModel) return;
-
-        $match = $comercialModel->match;
 
         try {
             $request->validate([
@@ -340,7 +338,7 @@ class SaprovController extends Controller
             $prodsucursal = Saprodsucursal::with('producto')->where('codprod', $codprod)->get();
             if($prodsucursal)
                 foreach ($prodsucursal as $item){
-                    if($item->producto->comercial == $match)
+                    if($item->producto->comercial == $comercialid)
                         $item->delete();
                 }
 
@@ -377,16 +375,14 @@ class SaprovController extends Controller
      */
     private function syncProductPrices($codprod, $productoOrigen)
     {
-        $comercial = session('comercialid');
-        $comercialModel = Sacomercial::find($comercial);
+        $comercialid = session('comercialid');
+        $comercialModel = Sacomercial::find($comercialid);
 
         if (!$comercialModel) return;
 
-        $match = $comercialModel->match;
 
         // Buscar otros comerciales con el mismo match
-        $otrosComerciales = Sacomercial::where('match', $match)
-            ->where('id', '!=', $comercial)
+        $otrosComerciales = Sacomercial::where('id', '!=', $comercialid)
             ->get();
 
         foreach ($otrosComerciales as $comercialDestino) {
@@ -403,7 +399,7 @@ class SaprovController extends Controller
                 $prodsucursal = Saprodsucursal::with('producto')->where('codprod', $codprod)->get();
                 if($prodsucursal)
                     foreach ($prodsucursal as $item){
-                        if($item->producto->comercial == $match)
+                        if($item->producto->comercial == $comercialid)
                             $item->delete();
                     }
 
