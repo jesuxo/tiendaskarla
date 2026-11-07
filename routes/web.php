@@ -8,6 +8,7 @@ use App\Http\Controllers\UserSucursalController;
 use App\Http\Controllers\SacompController;
 use App\Http\Controllers\SainstaController;
 use App\Http\Controllers\SaprovController;
+use App\Http\Controllers\SaprodController;
 use App\Http\Controllers\SaprodImagenController;
 use App\Http\Controllers\SaacxcController;
 use App\Http\Controllers\Seriales\VerificacionSerialController;
